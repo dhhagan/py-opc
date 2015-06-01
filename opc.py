@@ -135,6 +135,11 @@ class OPCN2:
             r = self.cnxn.xfer([0x00])[0]
             resp.append(r)
 
+        i = 0
+        for each in resp:
+            print ("Index: {0} -> {1}".format(i, each))
+            i += 1
+
         print ("Temp Data: {0}".format(resp[36:39]))
         print ("Pressure Data: {0}".format(resp[40:43]))
         print ("Period Data: {0}".format(resp[44:47]))

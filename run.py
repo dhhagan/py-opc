@@ -39,10 +39,13 @@ print (opc.readInfoString())
 sleep(1)
 
 # Read the histogram
-print ("Reading the histogram")
-hist = opc.readHistogram()
-for key, value in hist.iteritems():
-    print ("Key: {0} -> {1}".format(key, value))
+try:
+    print ("Reading the histogram")
+    hist = opc.readHistogram()
+    for key, value in hist.items():
+        print ("{0} -> {1}".format(key, value))
+except:
+    pass
 
 # Turn the OPC OFF
 print ("Turning off the OPC")

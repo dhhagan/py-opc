@@ -48,7 +48,7 @@ for i in range(5):
     except:
         pass
 
-    sleep(5*i)
+    sleep(5)
 
 # Turn the OPC OFF
 print ("Turning off the OPC")

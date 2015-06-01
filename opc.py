@@ -50,7 +50,7 @@ class OPCN2:
         ''' Calculate the sampling period in seconds '''
         if len(vals) < 4:
             return None
-            
+
         return ((vals[3] << 24) | (vals[2] << 16) | (vals[1] << 8) | vals[0]) / 12e6
 
     def __calculateChecksum(self, MSB, LSB):
@@ -134,6 +134,10 @@ class OPCN2:
         for i in range(62):
             r = self.cnxn.xfer([0x00])[0]
             resp.append(r)
+
+        print ("Temp Data: {0}".format(resp[36:39]))
+        print ("Pressure Data: {0}".format(resp[40:43]))
+        print ("Period Data: {0}".format(resp[44:47]))
 
 
         # convert to real things and store in dictionary!

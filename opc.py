@@ -34,7 +34,7 @@ class OPCN2:
 
     def __calculateTemp(vals):
         ''' Calculates the temperature in degrees celcius '''
-        return ((vals[3] << 24 | (vals[2] << 16) | (vals[1] << 8) | vals[0]) / 10.0
+        return ((vals[3] << 24) | (vals[2] << 16) | (vals[1] << 8) | vals[0]) / 10.0
 
     def __calculatePressure(vals):
         ''' Calculate the pressure in Pascals '''
@@ -42,7 +42,7 @@ class OPCN2:
 
     def __calculatePeriod(vals):
         ''' Calculate the sampling period in seconds '''
-        return ((vals[3] << 24 | (vals[2] << 16) | (vals[1] << 8) | vals[0]) / 12e6
+        return ((vals[3] << 24) | (vals[2] << 16) | (vals[1] << 8) | vals[0]) / 12e6
 
     def __calculateChecksum(MSB, LSB):
         ''' Calculate the checksum '''

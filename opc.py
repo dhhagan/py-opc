@@ -140,9 +140,9 @@ class OPCN2:
             print ("Index: {0} -> {1}".format(i, each))
             i += 1
 
-        print ("Temp Data: {0}".format(resp[36:39]))
-        print ("Pressure Data: {0}".format(resp[40:43]))
-        print ("Period Data: {0}".format(resp[44:47]))
+        print ("Temp Data: {0}".format(resp[36:40]))
+        print ("Pressure Data: {0}".format(resp[40:44]))
+        print ("Period Data: {0}".format(resp[44:48]))
 
 
         # convert to real things and store in dictionary!

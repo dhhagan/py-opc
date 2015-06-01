@@ -126,6 +126,7 @@ class OPCN2:
             r = self.cnxn.xfer([0x00])[0]
             resp.append(r)
 
+        '''
         # convert to real things and store in dictionary!
         data['Bin 0']           = self.__calculateHist(resp[1], resp[0])
         data['Bin 1']           = self.__calculateHist(resp[3], resp[2])
@@ -154,8 +155,8 @@ class OPCN2:
         data['PM1']             = self.__calculatePM(resp[50:53])
         data['PM2.5']           = self.__calculatePM(resp[54:57])
         data['PM10']            = self.__calculatePM(resp[58:61])
-
-        return data
+        '''
+        return resp
 
     def __repr__(self):
         return "Alphasense OPC: Firmware v{0}".format(self.firmware)

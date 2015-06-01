@@ -21,34 +21,34 @@ class OPCN2:
 
         self.firmware = None
 
-    def __calculateHist(MSB, LSB):
+    def __calculateHist(self, MSB, LSB):
         ''' Internal function to calculate the histogram bin from the MSB and LSB '''
         return (MSB << 8) | LSB
 
-    def __calculateMToF(mtof):
+    def __calculateMToF(self, mtof):
         '''
             Internal function to calculate the average amount of time that particles in
             this bin took to cross the path of the OPC units -> [micro-seconds]
         '''
         return mtof / 3.0
 
-    def __calculateTemp(vals):
+    def __calculateTemp(self, vals):
         ''' Calculates the temperature in degrees celcius '''
         return ((vals[3] << 24) | (vals[2] << 16) | (vals[1] << 8) | vals[0]) / 10.0
 
-    def __calculatePressure(vals):
+    def __calculatePressure(self, vals):
         ''' Calculate the pressure in Pascals '''
         return ((vals[3] << 24) | (vals[2] << 16) | (vals[1] << 8) | vals[0])
 
-    def __calculatePeriod(vals):
+    def __calculatePeriod(self, vals):
         ''' Calculate the sampling period in seconds '''
         return ((vals[3] << 24) | (vals[2] << 16) | (vals[1] << 8) | vals[0]) / 12e6
 
-    def __calculateChecksum(MSB, LSB):
+    def __calculateChecksum(self, MSB, LSB):
         ''' Calculate the checksum '''
         return (MSB << 8) | LSB
 
-    def __calculatePM(vals):
+    def __calculatePM(self, vals):
         ''' Calculate the PM value '''
         return True
 
@@ -126,7 +126,7 @@ class OPCN2:
             r = self.cnxn.xfer([0x00])[0]
             resp.append(r)
 
-        '''
+
         # convert to real things and store in dictionary!
         data['Bin 0']           = self.__calculateHist(resp[1], resp[0])
         data['Bin 1']           = self.__calculateHist(resp[3], resp[2])
@@ -155,8 +155,8 @@ class OPCN2:
         data['PM1']             = self.__calculatePM(resp[50:53])
         data['PM2.5']           = self.__calculatePM(resp[54:57])
         data['PM10']            = self.__calculatePM(resp[58:61])
-        '''
-        return resp
+
+        return data
 
     def __repr__(self):
         return "Alphasense OPC: Firmware v{0}".format(self.firmware)

@@ -30,9 +30,17 @@ opc = OPCN2(spi)
 print ("Turning on the OPC")
 opc.on()
 
+sleep(1)
+
 # Read the info
 print ("Reading the information string")
 print (opc.readInfoString())
+
+sleep(1)
+
+# Read the histogram
+print ("Reading the histogram")
+print (opc.readHistogram())
 
 # Turn the OPC OFF
 print ("Turning off the OPC")

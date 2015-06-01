@@ -38,7 +38,7 @@ class OPCN2:
 
     def __calculatePressure(vals):
         ''' Calculate the pressure in Pascals '''
-        return ((vals[3] << 24 | (vals[2] << 16) | (vals[1] << 8) | vals[0])
+        return ((vals[3] << 24) | (vals[2] << 16) | (vals[1] << 8) | vals[0])
 
     def __calculatePeriod(vals):
         ''' Calculate the sampling period in seconds '''

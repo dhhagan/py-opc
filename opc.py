@@ -166,13 +166,13 @@ class OPCN2:
         data['Bin3 MToF']       = self.__calculateMToF(resp[33])
         data['Bin5 MToF']       = self.__calculateMToF(resp[34])
         data['Bin7 MToF']       = self.__calculateMToF(resp[35])
-        data['Temperature']     = self.__calculateTemp(resp[36:39])
-        data['Pressure']        = self.__calculatePressure(resp[40:43])
-        data['Period Count']    = self.__calculatePeriod(resp[44:47])
+        data['Temperature']     = self.__calculateTemp(resp[36:40])
+        data['Pressure']        = self.__calculatePressure(resp[40:44])
+        data['Period Count']    = self.__calculatePeriod(resp[44:48])
         data['Checksum']        = self.__calculateChecksum(resp[49], resp[48])
-        data['PM1']             = self.__calculatePM(resp[50:53])
-        data['PM2.5']           = self.__calculatePM(resp[54:57])
-        data['PM10']            = self.__calculatePM(resp[58:61])
+        data['PM1']             = self.__calculatePM(resp[50:54])
+        data['PM2.5']           = self.__calculatePM(resp[54:58])
+        data['PM10']            = self.__calculatePM(resp[58:])
 
         return data
 

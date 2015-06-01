@@ -28,7 +28,7 @@ opc = OPCN2(spi)
 
 # Turn the OPC ON
 print ("Turning on the OPC")
-opc.on()
+print ("ON: {0}".format(opc.on()))
 
 sleep(1)
 
@@ -52,4 +52,4 @@ for i in range(5):
 
 # Turn the OPC OFF
 print ("Turning off the OPC")
-opc.off()
+print ("OFF: {0}".format(opc.off()))

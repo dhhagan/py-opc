@@ -41,7 +41,7 @@ sleep(1)
 # Read the histogram
 print ("Reading the histogram")
 hist = opc.readHistogram()
-for key, value in hist:
+for key, value in hist.iteritems():
     print ("Key: {0} -> {1}".format(key, value))
 
 # Turn the OPC OFF

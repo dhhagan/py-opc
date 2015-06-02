@@ -135,14 +135,17 @@ class OPCN2:
             r = self.cnxn.xfer([0x00])[0]
             resp.append(r)
 
-        i = 0
-        for each in resp:
-            print ("Index: {0} -> {1}".format(i, each))
-            i += 1
+        #i = 0
+        #for each in resp:
+        #    print ("Index: {0} -> {1}".format(i, each))
+        #    i += 1
 
         print ("Temp Data: {0}".format(resp[36:40]))
         print ("Pressure Data: {0}".format(resp[40:44]))
         print ("Period Data: {0}".format(resp[44:48]))
+        print ("PM1: {0}".format(resp[50:54]))
+        print ("PM2.5: {0}".format(resp[54:58]))
+        print ("PM10: {0}".format(resp[58:]))
 
 
         # convert to real things and store in dictionary!

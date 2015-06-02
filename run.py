@@ -45,8 +45,9 @@ while True:
         print ("Reading the histogram: Run {0}".format(i))
         hist = opc.readHistogram()
         i += 1
-    except:
-        pass
+    except KeyboardInterrupt:
+        opc.off()
+        raise
 
     sleep(5)
 

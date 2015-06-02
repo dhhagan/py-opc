@@ -12,8 +12,9 @@ class OPCN2:
     '''
         Class instance for the Alphasense Optical Particle Counter (OPC-N2)
     '''
-    def __init__(self, spi_connection):
+    def __init__(self, spi_connection, debug = False):
         self.cnxn = spi_connection
+        self.debug = debug
 
         # Check to make sure the connection is a valid SpiDev instance
         if not isinstance(spi_connection, spidev.SpiDev):
@@ -21,113 +22,145 @@ class OPCN2:
 
         self.firmware = None
 
-    def __calculateHist(self, MSB, LSB):
-        ''' Internal function to calculate the histogram bin from the MSB and LSB '''
+    def __combine_bytes(self, LSB, MSB):
+        ''' returns combined bytes '''
         return (MSB << 8) | LSB
 
-    def __calculateMToF(self, mtof):
+    def __calculate_mtof(self, mtof):
         '''
-            Internal function to calculate the average amount of time that particles in
+            calculates the average amount of time that particles in
             this bin took to cross the path of the OPC units -> [micro-seconds]
         '''
         return mtof / 3.0
 
-    def __calculateTemp(self, vals):
-        ''' Calculates the temperature in degrees celcius '''
+    def __calculate_temp(self, vals):
+        ''' calculates the temperature in degrees celcius '''
         if len(vals) < 4:
             return None
 
         return ((vals[3] << 24) | (vals[2] << 16) | (vals[1] << 8) | vals[0]) / 10.0
 
-    def __calculatePressure(self, vals):
-        ''' Calculate the pressure in Pascals '''
+    def __calculate_pressure(self, vals):
+        ''' calculate the pressure in pascals '''
         if len(vals) < 4:
             return None
 
         return ((vals[3] << 24) | (vals[2] << 16) | (vals[1] << 8) | vals[0])
 
-    def __calculatePeriod(self, vals):
-        ''' Calculate the sampling period in seconds '''
+    def __calculate_period(self, vals):
+        ''' calculate the sampling period in seconds '''
         if len(vals) < 4:
             return None
 
         return ((vals[3] << 24) | (vals[2] << 16) | (vals[1] << 8) | vals[0]) / 12e6
 
-    def __calculateChecksum(self, MSB, LSB):
-        ''' Calculate the checksum '''
+    def __calculate_checksum(self, MSB, LSB):
+        ''' calculate the checksum '''
         return (MSB << 8) | LSB
 
-    def __calculatePM(self, vals):
+    def __calculate_pm(self, vals):
         ''' Calculate the PM value '''
         return True
 
+    # External functions!
     def on(self):
-        ''' Turns ON the OPC '''
-        b1 = self.cnxn.xfer([0x03])[0]
-        sleep(9e-3)
-        b2, b3 = self.cnxn.xfer([0x00, 0x01])
+        ''' turns ON the OPC (fan and laser) '''
+        b1 = self.cnxn.xfer([0x03])[0]          # send the command byte
+        sleep(9e-3)                             # sleep for 9 ms
+        b2, b3 = self.cnxn.xfer([0x00, 0x01])   # send the following two bytes
 
-        # Check the outgoing bytes
         return True if b1 == 0xF3 and b2 == 0x03 else False
 
     def off(self):
-        ''' Turns OFF the OPC '''
-        b1 = self.cnxn.xfer([0x03])[0]
-        sleep(9e-3)
-        b2 = self.cnxn.xfer([0x01])[0]
+        ''' turns OFF the OPC (fan and laser)'''
+        b1 = self.cnxn.xfer([0x03])[0]          # send the command byte
+        sleep(9e-3)                             # sleep for 9 ms
+        b2 = self.cnxn.xfer([0x01])[0]          # send the following two bytes
 
         return True if b1 == 0xF3 and b2 == 0x03 else False
 
-    def checkStatus(self):
-        ''' Check the status of the OPC-N2 '''
-        b = self.cnxn.xfer([0xCF])[0]
+    def check_status(self):
+        ''' returns the status of the OPC-N2 as a boolean '''
+        b = self.cnxn.xfer([0xCF])[0]           # send the command byte
 
         return True if b == 0xF3 else False
 
-    def readInfoString(self):
-        ''' Read information string and store useful things places '''
-        # Set up a list for the string to be stored in
-        infostring = []
+    def read_info_string(self):
+        ''' returns the firmware information for the OPC as a string '''
 
-        # Read the info string
+        infostring = []
         command = 0x3F
 
-        # Send the command byte
+        # Send the command byte and sleep for 9 ms
         self.cnxn.xfer([command])
-
-        # Wait a bit
         sleep(9e-3)
 
-        # Read the info string
+        # Read the info string by sending 60 empty bytes
         for i in range(60):
             resp = self.cnxn.xfer([0x00])[0]
             infostring.append(chr(resp))
-
 
         # Set the Firmware variable
         self.firmware = ''.join(infostring[23:27])
 
         return ''.join(infostring)
 
-    def readConfigVariables(self):
-        ''' Reads the configuration variables and returns them as a dictionary '''
-        return
+    def read_config_variables(self):
+        '''
+        reads the configuration variables and returns them as a dictionary
 
-    def readHistogram(self):
+        Byte List:
+         - [0:30]   -> LSB/MSB for 16 bit unsigned ints (bin boundaries)
+         - [30:32]  -> spare bytes
+         - [32:96]  -> 4 bytes for each bin particle volume (4 byte real number)
+         - [96:160] -> 4 bytes for each bin particle density (4 byte real number)
+         - [160:224]-> 4 bytes for each bin sample volume weighting
+         - [224:228]-> 4 byte real number Gain Scaling Coef. (GSC)
+         - [228:232]-> 4 byte real number sample flow rate
+         - [232]    -> 1 byte Laser DAC
+         - [233]    -> 1 byte Fan DAC
+         - [234:256]-> spare bytes
+        '''
+        config = []
+        command = 0x3C
+
+        # Send the command byte and sleep for 10 ms
+        self.cnxn.xfer([command])
+        sleep(10e-3)
+
+        # Read the info string by sending 60 empty bytes
+        for i in range(256):
+            resp = self.cnxn.xfer([0x00])[0]
+            infostring.append(resp)
+
+        # Add the bin bounds to the dictionary of data
+        bin = 0
+        for i in xrange(0, 28, 2):
+            config["Bin Boundary {0}".format(bin)] = self.__combine_bytes(resp[i], resp[i + 1])
+            bin += 1
+
+        # Don't know what to do about all of the bytes yet!
+        if self.debug:
+            count = 0
+            print ("Debugging the Config Variables")
+            for each in config:
+                print ("\t{0}: {1}".format(count, each))
+                count += 1
+
+        return config
+
+    def read_histogram(self):
         ''' Reads and resets the histogram bins '''
-        # Set up a list to append histogram data to
         resp = []
+        data = {}
 
         # command byte
         command = 0x30
 
-        # Initialize a dictionary that will hold all the data
-        data = {}
-
         # Send the command byte
         self.cnxn.xfer([command])
 
-        # Wait a sec..
+        # Wait 10 ms
         sleep(10e-3)
 
         # read the histogram
@@ -135,10 +168,6 @@ class OPCN2:
             r = self.cnxn.xfer([0x00])[0]
             resp.append(r)
 
-        #i = 0
-        #for each in resp:
-        #    print ("Index: {0} -> {1}".format(i, each))
-        #    i += 1
 
         #print ("Temp Data: {0}".format(resp[36:40]))
         #print ("Pressure Data: {0}".format(resp[40:44]))
@@ -149,33 +178,47 @@ class OPCN2:
 
 
         # convert to real things and store in dictionary!
-        data['Bin 0']           = self.__calculateHist(resp[1], resp[0])
-        data['Bin 1']           = self.__calculateHist(resp[3], resp[2])
-        data['Bin 2']           = self.__calculateHist(resp[5], resp[4])
-        data['Bin 3']           = self.__calculateHist(resp[7], resp[6])
-        data['Bin 4']           = self.__calculateHist(resp[9], resp[8])
-        data['Bin 5']           = self.__calculateHist(resp[11], resp[10])
-        data['Bin 6']           = self.__calculateHist(resp[13], resp[12])
-        data['Bin 7']           = self.__calculateHist(resp[15], resp[14])
-        data['Bin 8']           = self.__calculateHist(resp[17], resp[16])
-        data['Bin 9']           = self.__calculateHist(resp[19], resp[18])
-        data['Bin 10']          = self.__calculateHist(resp[21], resp[20])
-        data['Bin 11']          = self.__calculateHist(resp[23], resp[22])
-        data['Bin 12']          = self.__calculateHist(resp[25], resp[24])
-        data['Bin 13']          = self.__calculateHist(resp[27], resp[26])
-        data['Bin 14']          = self.__calculateHist(resp[29], resp[28])
-        data['Bin 15']          = self.__calculateHist(resp[31], resp[30])
-        data['Bin1 MToF']       = self.__calculateMToF(resp[32])
-        data['Bin3 MToF']       = self.__calculateMToF(resp[33])
-        data['Bin5 MToF']       = self.__calculateMToF(resp[34])
-        data['Bin7 MToF']       = self.__calculateMToF(resp[35])
-        data['Temperature']     = self.__calculateTemp(resp[36:40])
-        data['Pressure']        = self.__calculatePressure(resp[40:44])
-        data['Period Count']    = self.__calculatePeriod(resp[44:48])
-        data['Checksum']        = self.__calculateChecksum(resp[49], resp[48])
-        data['PM1']             = self.__calculatePM(resp[50:54])
-        data['PM2.5']           = self.__calculatePM(resp[54:58])
-        data['PM10']            = self.__calculatePM(resp[58:])
+        data['Bin 0']           = self.__combine_bytes(resp[0], resp[1])
+        data['Bin 1']           = self.__combine_bytes(resp[2], resp[3])
+        data['Bin 2']           = self.__combine_bytes(resp[4], resp[5])
+        data['Bin 3']           = self.__combine_bytes(resp[6], resp[7])
+        data['Bin 4']           = self.__combine_bytes(resp[8], resp[9])
+        data['Bin 5']           = self.__combine_bytes(resp[10], resp[11])
+        data['Bin 6']           = self.__combine_bytes(resp[12], resp[13])
+        data['Bin 7']           = self.__combine_bytes(resp[14], resp[15])
+        data['Bin 8']           = self.__combine_bytes(resp[16], resp[17])
+        data['Bin 9']           = self.__combine_bytes(resp[18], resp[19])
+        data['Bin 10']          = self.__combine_bytes(resp[20], resp[21])
+        data['Bin 11']          = self.__combine_bytes(resp[22], resp[23])
+        data['Bin 12']          = self.__combine_bytes(resp[24], resp[25])
+        data['Bin 13']          = self.__combine_bytes(resp[26], resp[27])
+        data['Bin 14']          = self.__combine_bytes(resp[28], resp[29])
+        data['Bin 15']          = self.__combine_bytes(resp[30], resp[31])
+        data['Bin1 MToF']       = self.__calculate_mtof(resp[32])
+        data['Bin3 MToF']       = self.__calculate_mtof(resp[33])
+        data['Bin5 MToF']       = self.__calculate_mtof(resp[34])
+        data['Bin7 MToF']       = self.__calculate_mtof(resp[35])
+        data['Temperature']     = self.__calculate_temp(resp[36:40])
+        data['Pressure']        = self.__calculate_pressure(resp[40:44])
+        data['Period Count']    = self.__calculate_period(resp[44:48])
+        data['Checksum']        = self.__calculate_checksum(resp[49], resp[48])
+        data['PM1']             = self.__calculate_pm(resp[50:54])
+        data['PM2.5']           = self.__calculate_pm(resp[54:58])
+        data['PM10']            = self.__calculate_pm(resp[58:])
+
+        # Calculate the sum of the histogram bins
+        data['histogram sum'] = data['Bin 0'] + data['Bin 1'] + data['Bin 2']   + \
+                data['Bin 3'] + data['Bin 4'] + data['Bin 5'] + data['Bin 6']   + \
+                data['Bin 7'] + data['Bin 8'] + data['Bin 9'] + data['Bin 10']  + \
+                data['Bin 11'] + data['Bin 12'] + data['Bin 13'] + data['Bin 14'] + \
+                data['Bin 15']
+
+        if self.debug:
+            count = 0
+            print ("Debugging the Histogram")
+            for each in resp:
+                print ("\t{0}: {1}".format(count, each))
+                count += 1
 
         return data
 

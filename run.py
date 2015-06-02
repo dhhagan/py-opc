@@ -40,14 +40,14 @@ sleep(1)
 
 # Read the histogram
 i = 0
-while True:
-    try:
+try:
+    while True:
         print ("Reading the histogram: Run {0}".format(i))
         hist = opc.readHistogram()
+        print (hist)
         i += 1
-    except KeyboardInterrupt:
-        opc.off()
-        raise
+except KeyboardInterrupt:
+    opc.off()
 
     sleep(5)
 

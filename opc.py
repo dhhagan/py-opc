@@ -7,6 +7,7 @@
 
 from time import sleep
 import spidev
+import struct
 
 class OPCN2:
     '''
@@ -25,6 +26,10 @@ class OPCN2:
     def __combine_bytes(self, LSB, MSB):
         ''' returns combined bytes '''
         return (MSB << 8) | LSB
+
+    def __calc_float(self, byte_array):
+        ''' returns a float from array of 4 bytes '''
+        return struct.unpack('>f', ''.join(chr(i) for i in reversed(byte_array)))
 
     def __calculate_mtof(self, mtof):
         '''
@@ -131,7 +136,7 @@ class OPCN2:
         # Read the info string by sending 60 empty bytes
         for i in range(256):
             resp = self.cnxn.xfer([0x00])[0]
-            infostring.append(resp)
+            config.append(resp)
 
         # Add the bin bounds to the dictionary of data
         bin = 0

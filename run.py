@@ -34,7 +34,7 @@ sleep(1)
 
 # Read the info
 print ("Reading the information string")
-print (opc.readInfoString())
+print (opc.read_info_stringnfoString())
 
 sleep(1)
 
@@ -43,7 +43,7 @@ i = 0
 try:
     while True:
         print ("Reading the histogram: Run {0}".format(i))
-        hist = opc.readHistogram()
+        hist = opc.read_histogram()
         print (hist)
         sleep(10)
         i += 1

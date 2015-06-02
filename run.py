@@ -34,7 +34,7 @@ sleep(1)
 
 # Read the info
 print ("Reading the information string")
-print (opc.read_info_stringnfoString())
+print (opc.read_info_string())
 
 sleep(1)
 

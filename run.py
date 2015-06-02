@@ -45,11 +45,10 @@ try:
         print ("Reading the histogram: Run {0}".format(i))
         hist = opc.readHistogram()
         print (hist)
+        sleep(10)
         i += 1
 except KeyboardInterrupt:
     opc.off()
-
-    sleep(5)
 
 # Turn the OPC OFF
 print ("Turning off the OPC")

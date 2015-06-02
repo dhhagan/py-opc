@@ -39,12 +39,12 @@ print (opc.readInfoString())
 sleep(1)
 
 # Read the histogram
-for i in range(5):
+i = 0
+while True:
     try:
-        print ("Reading the histogram: {0}".format(i))
+        print ("Reading the histogram: Run {0}".format(i))
         hist = opc.readHistogram()
-        for key, value in hist.items():
-            print ("{0} -> {1}".format(key, value))
+        i += 1
     except:
         pass
 

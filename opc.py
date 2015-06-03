@@ -126,14 +126,35 @@ class OPCN2:
         self.cnxn.xfer([command])
         sleep(10e-3)
 
-        # Read the info string by sending 60 empty bytes
+        # Read the config variables by sending 256 empty bytes
         for i in range(256):
             resp = self.cnxn.xfer([0x00])[0]
+            print ("{0} -> {1}".format(i, resp))
             config.append(resp)
 
         # Add the bin bounds to the dictionary of data
         for i in range(0, 15):
             data["Bin Boundary {0}".format(i)] = self.__combine_bytes(config[2*i], config[2*i + 1])
+
+        # Add the Bin Particle Volumes (BVP)
+        for i in range(0, 16):
+            data["BPV {0}".format(i)] = self.__calculate_float(config[4*i + 32:4*i + 36])
+
+        # Add the Bin Particle Densities (BPD)
+        for i in range(0, 16):
+            data["BPD {0}".format(i)] = self.__calculate_float(config[4*i + 96:4*i + 100])
+
+        # Add the Bin Sample Volume Weight (BSVW)
+        for i in range(0, 16):
+            data["BSVW {0}".format(i)] = self.__calculate_float(config[4*i + 160: 4*i + 164])
+
+        # Add the Gain Scaling Coefficient (GSC) and sample flow rate (SFR)
+        data["GSC"] = self.__calculate_float(config[224:228])
+        data["SFR"] = self.__calculate_float(config[228:232])
+
+        # Add laser dac (LDAC) and Fan dac (FanDAC)
+        data["LDAC"] = config[232]
+        data["FanDAC"] = config[233]
 
         # Don't know what to do about all of the bytes yet!
         if self.debug:

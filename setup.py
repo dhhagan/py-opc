@@ -6,7 +6,6 @@ from distutils.core import setup
 
 setup(
     name = 'py-opc',
-    packages = [],
     version = __version__,
     description = 'Python libary for operating the Alphasense OPC-N2',
     author = 'David H Hagan',
@@ -25,5 +24,6 @@ setup(
         'Topic :: System :: Hardware',
         'Topic :: System :: Hardware Drivers',
         'Topic :: Software Development :: Libraries :: Python Modules'
-    ]
+    ],
+    zip_safe = False
 )

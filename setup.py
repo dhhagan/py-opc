@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 from distutils.core import setup
 
 setup(
     name = 'opc',
     version = __version__,
+    packages = ['opc'],
     description = 'Python libary for operating the Alphasense OPC-N2',
     author = 'David H Hagan',
     author_email = 'david@davidhhagan.com',

@@ -27,7 +27,7 @@ class OPCN2:
         ''' returns combined bytes '''
         return (MSB << 8) | LSB
 
-    def __calc_float(self, byte_array):
+    def __calculate_float(self, byte_array):
         ''' returns a float from array of 4 bytes '''
         return struct.unpack('>f', ''.join(chr(i) for i in reversed(byte_array)))
 
@@ -58,14 +58,6 @@ class OPCN2:
             return None
 
         return ((vals[3] << 24) | (vals[2] << 16) | (vals[1] << 8) | vals[0]) / 12e6
-
-    def __calculate_checksum(self, MSB, LSB):
-        ''' calculate the checksum '''
-        return (MSB << 8) | LSB
-
-    def __calculate_pm(self, vals):
-        ''' Calculate the PM value '''
-        return True
 
     # External functions!
     def on(self):
@@ -173,15 +165,6 @@ class OPCN2:
             r = self.cnxn.xfer([0x00])[0]
             resp.append(r)
 
-
-        #print ("Temp Data: {0}".format(resp[36:40]))
-        #print ("Pressure Data: {0}".format(resp[40:44]))
-        #print ("Period Data: {0}".format(resp[44:48]))
-        #print ("PM1: {0}".format(resp[50:54]))
-        #print ("PM2.5: {0}".format(resp[54:58]))
-        #print ("PM10: {0}".format(resp[58:]))
-
-
         # convert to real things and store in dictionary!
         data['Bin 0']           = self.__combine_bytes(resp[0], resp[1])
         data['Bin 1']           = self.__combine_bytes(resp[2], resp[3])
@@ -206,10 +189,10 @@ class OPCN2:
         data['Temperature']     = self.__calculate_temp(resp[36:40])
         data['Pressure']        = self.__calculate_pressure(resp[40:44])
         data['Period Count']    = self.__calculate_period(resp[44:48])
-        data['Checksum']        = self.__calculate_checksum(resp[49], resp[48])
-        data['PM1']             = self.__calculate_pm(resp[50:54])
-        data['PM2.5']           = self.__calculate_pm(resp[54:58])
-        data['PM10']            = self.__calculate_pm(resp[58:])
+        data['Checksum']        = self.__combine_bytes(resp[48], resp[49])
+        data['PM1']             = self.__calculate_float(resp[50:54])
+        data['PM2.5']           = self.__calculate_float(resp[54:58])
+        data['PM10']            = self.__calculate_float(resp[58:])
 
         # Calculate the sum of the histogram bins
         data['histogram sum'] = data['Bin 0'] + data['Bin 1'] + data['Bin 2']   + \
@@ -218,6 +201,7 @@ class OPCN2:
                 data['Bin 11'] + data['Bin 12'] + data['Bin 13'] + data['Bin 14'] + \
                 data['Bin 15']
 
+        # If debug is True, print out the bytes!
         if self.debug:
             count = 0
             print ("Debugging the Histogram")

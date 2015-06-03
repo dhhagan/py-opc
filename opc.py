@@ -295,7 +295,7 @@ class OPCN2:
         b = self.cnxn.xfer([0x01])[0]
         c = self.cnxn.xfer([value])[0]
 
-        return True if a == 0xF3 and b = 0x42 and c == 0x01 else False
+        return True if a == 0xF3 and b == 0x42 and c == 0x01 else False
 
         return
 

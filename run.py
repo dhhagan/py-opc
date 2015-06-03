@@ -42,44 +42,49 @@ sleep(1)
 i = 0
 try:
     while True:
-        print ("Reading the histogram: Run {0}".format(i))
-        hist = opc.read_histogram()
+        try:
+            print ("Reading the histogram: Run {0}".format(i))
+            hist = opc.read_histogram()
 
-        # Let's print out the histogram nicely
-        print ("\tBin 0:\t{0}".format(hist['Bin 0']))
-        print ("\tBin 1:\t{0}".format(hist['Bin 1']))
-        print ("\tBin 2:\t{0}".format(hist['Bin 2']))
-        print ("\tBin 3:\t{0}".format(hist['Bin 3']))
-        print ("\tBin 4:\t{0}".format(hist['Bin 4']))
-        print ("\tBin 5:\t{0}".format(hist['Bin 5']))
-        print ("\tBin 6:\t{0}".format(hist['Bin 6']))
-        print ("\tBin 7:\t{0}".format(hist['Bin 7']))
-        print ("\tBin 8:\t{0}".format(hist['Bin 8']))
-        print ("\tBin 9:\t{0}".format(hist['Bin 9']))
-        print ("\tBin 10:\t{0}".format(hist['Bin 10']))
-        print ("\tBin 11:\t{0}".format(hist['Bin 11']))
-        print ("\tBin 12:\t{0}".format(hist['Bin 12']))
-        print ("\tBin 13:\t{0}".format(hist['Bin 13']))
-        print ("\tBin 14:\t{0}".format(hist['Bin 14']))
-        print ("\tBin 15:\t{0}".format(hist['Bin 15']))
+            # Let's print out the histogram nicely
+            print ("\tBin 0:\t{0}".format(hist['Bin 0']))
+            print ("\tBin 1:\t{0}".format(hist['Bin 1']))
+            print ("\tBin 2:\t{0}".format(hist['Bin 2']))
+            print ("\tBin 3:\t{0}".format(hist['Bin 3']))
+            print ("\tBin 4:\t{0}".format(hist['Bin 4']))
+            print ("\tBin 5:\t{0}".format(hist['Bin 5']))
+            print ("\tBin 6:\t{0}".format(hist['Bin 6']))
+            print ("\tBin 7:\t{0}".format(hist['Bin 7']))
+            print ("\tBin 8:\t{0}".format(hist['Bin 8']))
+            print ("\tBin 9:\t{0}".format(hist['Bin 9']))
+            print ("\tBin 10:\t{0}".format(hist['Bin 10']))
+            print ("\tBin 11:\t{0}".format(hist['Bin 11']))
+            print ("\tBin 12:\t{0}".format(hist['Bin 12']))
+            print ("\tBin 13:\t{0}".format(hist['Bin 13']))
+            print ("\tBin 14:\t{0}".format(hist['Bin 14']))
+            print ("\tBin 15:\t{0}".format(hist['Bin 15']))
 
-        print ("\tTemp:\t{0}".format(hist['Temperature']))
-        print ("\tPres.:\t{0}".format(hist['Pressure']))
+            print ("\tTemp:\t{0}".format(hist['Temperature']))
+            print ("\tPres.:\t{0}".format(hist['Pressure']))
 
-        print ("\tPM1:\t{0}".format(hist['PM1']))
-        print ("\tPM2.5:\t{0}".format(hist['PM2.5']))
-        print ("\tPM10:\t{0}".format(hist['PM10']))
+            print ("\tPM1:\t{0}".format(hist['PM1']))
+            print ("\tPM2.5:\t{0}".format(hist['PM2.5']))
+            print ("\tPM10:\t{0}".format(hist['PM10']))
 
-        print ("\tMToF Bin 1:\t{0}".format(hist['Bin1 MToF']))
-        print ("\tMToF Bin 3:\t{0}".format(hist['Bin3 MToF']))
-        print ("\tMToF Bin 5:\t{0}".format(hist['Bin5 MToF']))
-        print ("\tMToF Bin 7:\t{0}".format(hist['Bin7 MToF']))
+            print ("\tMToF Bin 1:\t{0}".format(hist['Bin1 MToF']))
+            print ("\tMToF Bin 3:\t{0}".format(hist['Bin3 MToF']))
+            print ("\tMToF Bin 5:\t{0}".format(hist['Bin5 MToF']))
+            print ("\tMToF Bin 7:\t{0}".format(hist['Bin7 MToF']))
 
-        print ("\tPeriod Count:\t{0}".format(hist['Period Count']))
-        print ("\tChecksum:\t{0}".format(hist['Checksum']))
+            print ("\tPeriod Count:\t{0}".format(hist['Period Count']))
+            print ("\tChecksum:\t{0}".format(hist['Checksum']))
 
-        sleep(10)
-        i += 1
+            sleep(10)
+            i += 1
+        except Exception, err:
+            print ("{0}".format(err))
+            opc.off()
+
 except KeyboardInterrupt:
     opc.off()
 

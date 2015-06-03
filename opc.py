@@ -119,6 +119,7 @@ class OPCN2:
          - [234:256]-> spare bytes
         '''
         config = []
+        data = {}
         command = 0x3C
 
         # Send the command byte and sleep for 10 ms
@@ -131,10 +132,8 @@ class OPCN2:
             config.append(resp)
 
         # Add the bin bounds to the dictionary of data
-        bin = 0
-        for i in xrange(0, 28, 2):
-            config["Bin Boundary {0}".format(bin)] = self.__combine_bytes(resp[i], resp[i + 1])
-            bin += 1
+        for i in range(0, 15):
+            data["Bin Boundary {0}".format(i)] = self.__combine_bytes(config[2*i], config[2*i + 1])
 
         # Don't know what to do about all of the bytes yet!
         if self.debug:
@@ -144,7 +143,7 @@ class OPCN2:
                 print ("\t{0}: {1}".format(count, each))
                 count += 1
 
-        return config
+        return data
 
     def read_histogram(self):
         ''' Reads and resets the histogram bins '''

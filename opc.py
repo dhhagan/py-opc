@@ -277,7 +277,7 @@ class OPCN2:
         b = self.cnxn.xfer([0x00])[0]
         c = self.cnxn.xfer([value])[0]
 
-        return True if a == 0xF3 and b = 0x42 and c == 0x00 else False
+        return True if a == 0xF3 and b == 0x42 and c == 0x00 else False
 
     def set_laser_power(self, value):
         ''' Sets the laser power as a value between 0-255'''

@@ -81,7 +81,7 @@ try:
 
             sleep(10)
             i += 1
-        except Exception, err:
+        except Exception as err:
             print ("{0}".format(err))
             opc.off()
 

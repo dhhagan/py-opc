@@ -23,7 +23,7 @@ Python library for operating the Alphasense OPC-N2 Optical Particle Counter usin
 ## Sample Script / Getting Started
 
     import spidev
-    from py-opc import OPCN2
+    from opc import OPCN2
     from time import sleep
     
     spi = spidev.SpiDev()
@@ -31,16 +31,16 @@ Python library for operating the Alphasense OPC-N2 Optical Particle Counter usin
     spi.mode = 1
     spi.max_speed_hz = 500000
     
-    opc = OPCN2(spi)
+    alphasense = OPCN2(spi)
     
     # Turn the opc ON
-    opc.on()
+    alphasense.on()
     
     # Read the information string
-    print (opc.read_info_string())
+    print (alphasense.read_info_string())
     
     # Read the histogram
-    print (opc.read_histogram())
+    print (alphasense.read_histogram())
     
     # Turn the opc OFF
-    opc.off()
+    alphasense.off()

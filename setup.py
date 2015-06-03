@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 from distutils.core import setup
 
 setup(
-    name = 'py-opc',
+    name = 'opc',
     version = __version__,
     description = 'Python libary for operating the Alphasense OPC-N2',
     author = 'David H Hagan',
     author_email = 'david@davidhhagan.com',
     license = 'MIT',
     url = 'https://github.com/dhhagan/py-opc',
-    install_requires = ['spidev'],
     keywords = ['opc', 'alphasense', 'atmospheric chemistry'],
     classifiers = [
         'Development Status :: 1 - alpha',
@@ -24,6 +23,5 @@ setup(
         'Topic :: System :: Hardware',
         'Topic :: System :: Hardware Drivers',
         'Topic :: Software Development :: Libraries :: Python Modules'
-    ],
-    zip_safe = False
+    ]
 )

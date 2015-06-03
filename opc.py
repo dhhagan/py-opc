@@ -9,6 +9,8 @@ from time import sleep
 import spidev
 import struct
 
+from exceptions import SPIError
+
 class OPCN2:
     '''
         Class instance for the Alphasense Optical Particle Counter (OPC-N2)
@@ -16,12 +18,11 @@ class OPCN2:
     def __init__(self, spi_connection, debug = False):
         self.cnxn = spi_connection
         self.debug = debug
+        self.firmware = None
 
         # Check to make sure the connection is a valid SpiDev instance
         if not isinstance(spi_connection, spidev.SpiDev):
-            print ("Not an instance of SpiDev")
-
-        self.firmware = None
+            raise SPIError("This is not an instance of SpiDev.")
 
     def __combine_bytes(self, LSB, MSB):
         ''' returns combined bytes '''
@@ -59,7 +60,6 @@ class OPCN2:
 
         return ((vals[3] << 24) | (vals[2] << 16) | (vals[1] << 8) | vals[0]) / 12e6
 
-    # External functions!
     def on(self):
         ''' turns ON the OPC (fan and laser) '''
         b1 = self.cnxn.xfer([0x03])[0]          # send the command byte
@@ -118,8 +118,8 @@ class OPCN2:
          - [233]    -> 1 byte Fan DAC
          - [234:256]-> spare bytes
         '''
-        config = []
-        data = {}
+        config  = []
+        data    = {}
         command = 0x3C
 
         # Send the command byte and sleep for 10 ms
@@ -129,7 +129,6 @@ class OPCN2:
         # Read the config variables by sending 256 empty bytes
         for i in range(256):
             resp = self.cnxn.xfer([0x00])[0]
-            print ("{0} -> {1}".format(i, resp))
             config.append(resp)
 
         # Add the bin bounds to the dictionary of data
@@ -165,6 +164,10 @@ class OPCN2:
                 count += 1
 
         return data
+
+    def write_config_variables(self):
+        ''' Writes the configuration variables to memory '''
+        return
 
     def read_histogram(self):
         ''' Reads and resets the histogram bins '''
@@ -230,6 +233,119 @@ class OPCN2:
                 count += 1
 
         return data
+
+    def save_config_variables(self):
+        ''' Save the config variables in non-volatile memory '''
+        command = 0x43
+        byte_list = [0x3F, 0x3C, 0x3F, 0x3C, 0x43]
+        success = [0xF3, 0x43, 0x3F, 0x3C, 0x3F, 0x3C]
+        resp = []
+
+        # Send the command byte and then wait for 10 ms
+        r = self.cnxn.xfer([command])[0]
+        sleep(10e-3)
+
+        # append the response of the command byte to the List
+        resp.append(r)
+
+        # Send the rest of the config bytes
+        for each in byte_list:
+            r = self.cnxn.xfer([each])[0]
+            resp.append(r)
+
+        return True if resp == success else False
+
+    def enter_bootloader_mode(self):
+        ''' Enter bootloader mode '''
+        command = 0x41
+
+        return True if self.cnxn.xfer(command)[0] == 0xF3 else False
+
+    def set_fan_power(self, value):
+        ''' Sets the fan power as a value between 0-255 '''
+        command = 0x42
+
+        # Check to make sure the value is a single byte
+        if value >= 256:
+            raise ValueError("Try a single byte (0-255).")
+
+        # Send the command byte and wait 10 ms
+        a = self.cnxn.xfer([command])[0]
+        sleep(10e-3)
+
+        # Send the next two bytes
+        b = self.cnxn.xfer([0x00])[0]
+        c = self.cnxn.xfer([value])[0]
+
+        return True if a == 0xF3 and b = 0x42 and c == 0x00 else False
+
+    def set_laser_power(self, value):
+        ''' Sets the laser power as a value between 0-255'''
+        command = 0x42
+
+        # Check to make sure the value is a single byte
+        if value >= 256:
+            raise ValueError("Try a single byte (0-255).")
+
+        # Send the command byte and wait 10 ms
+        a = self.cnxn.xfer([command])[0]
+        sleep(10e-3)
+
+        # Send the next two bytes
+        b = self.cnxn.xfer([0x01])[0]
+        c = self.cnxn.xfer([value])[0]
+
+        return True if a == 0xF3 and b = 0x42 and c == 0x01 else False
+
+        return
+
+    def laser_on(self):
+        ''' Turn on the laser only '''
+        command = 0x03
+        byte    = 0x02
+
+        # Send the command byte, wait 10ms, and then send the byte
+        a = self.cnxn.xfer([command])[0]
+        sleep(10e-3)
+        b = self.cnxn.xfer([byte])[0]
+
+        return True if a == 0xF3 and b == 0x03 else False
+
+    def laser_off(self):
+        ''' Turn off the laser only '''
+        command = 0x03
+        byte    = 0x03
+
+        # Send the command byte, wait 10ms, and then send the byte
+        a = self.cnxn.xfer([command])[0]
+        sleep(10e-3)
+        b = self.cnxn.xfer([byte])[0]
+
+        return True if a == 0xF3 and b == 0x03 else False
+
+    def fan_on(self):
+        ''' Turn on the fan only '''
+        command = 0x03
+        byte    = 0x04
+
+        # Send the command byte, wait 10ms, and then send the byte
+        a = self.cnxn.xfer([command])[0]
+        sleep(10e-3)
+        b = self.cnxn.xfer([byte])[0]
+
+        return True if a == 0xF3 and b == 0x03 else False
+
+    def fan_off(self):
+        ''' Turn off the fan only '''
+        command = 0x03
+        byte    = 0x05
+
+        # Send the command byte, wait 10ms, and then send the byte
+        a = self.cnxn.xfer([command])[0]
+        sleep(10e-3)
+        b = self.cnxn.xfer([byte])[0]
+
+        return True if a == 0xF3 and b == 0x03 else False
 
     def __repr__(self):
         return "Alphasense OPC: Firmware v{0}".format(self.firmware)

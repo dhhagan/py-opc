@@ -1,15 +1,10 @@
-'''
-    Owned and written by David H Hagan
-    May 31, 2015
-
-    This script runs the Alphasense OPC-N2
-'''
+from .exceptions import SPIError
 
 from time import sleep
 import spidev
 import struct
 
-from exceptions import SPIError
+__all__ = ['OPCN2']
 
 class OPCN2:
     '''
@@ -296,8 +291,6 @@ class OPCN2:
         c = self.cnxn.xfer([value])[0]
 
         return True if a == 0xF3 and b == 0x42 and c == 0x01 else False
-
-        return
 
     def laser_on(self):
         ''' Turn on the laser only '''

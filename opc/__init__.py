@@ -1,3 +1,4 @@
+from pkg_resources import get_distribution
 from .exceptions import SPIError
 
 from time import sleep
@@ -5,6 +6,7 @@ import spidev
 import struct
 
 __all__ = ['OPCN2']
+__version__ = get_distribution('opc').version
 
 class OPCN2:
     '''

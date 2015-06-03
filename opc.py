@@ -29,7 +29,7 @@ class OPCN2:
 
     def __calculate_float(self, byte_array):
         ''' returns a float from array of 4 bytes '''
-        return struct.unpack('>f', ''.join(chr(i) for i in reversed(byte_array)))
+        return struct.unpack('>f', bytes(reversed(byte_array)))[0]
 
     def __calculate_mtof(self, mtof):
         '''

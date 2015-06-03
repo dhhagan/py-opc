@@ -64,14 +64,14 @@ try:
         print ("\tBin 15:\t{0}".format(hist['Bin 15']))
 
         print ("\tTemp:\t{0}".format(hist['Temperature']))
-        print ("\tPressure:\t{0}".format(hist['Pressure']))
+        print ("\tPres.:\t{0}".format(hist['Pressure']))
 
         print ("\tPM1:\t{0}".format(hist['PM1']))
         print ("\tPM2.5:\t{0}".format(hist['PM2.5']))
         print ("\tPM10:\t{0}".format(hist['PM10']))
 
         print ("\tMToF Bin 1:\t{0}".format(hist['Bin1 MToF']))
-        print ("\tMToF Bin 3:\t{0}".format(hist['Bin3 MToF ']))
+        print ("\tMToF Bin 3:\t{0}".format(hist['Bin3 MToF']))
         print ("\tMToF Bin 5:\t{0}".format(hist['Bin5 MToF']))
         print ("\tMToF Bin 7:\t{0}".format(hist['Bin7 MToF']))
 

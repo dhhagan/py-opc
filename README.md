@@ -4,7 +4,7 @@ Python library for operating the Alphasense OPC-N2 Optical Particle Counter usin
 
 ## Dependencies
   
-  1. `py-spidev`
+  1. [`py-spidev`](https://github.com/doceme/py-spidev)
 
 ## Installation
   

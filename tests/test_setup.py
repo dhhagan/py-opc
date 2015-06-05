@@ -4,6 +4,8 @@ from time import sleep
 from opc import OPCN2
 from opc.exceptions import SPIError, FirmwareError
 
+interval = 1
+
 class SetupTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -15,25 +17,11 @@ class SetupTestCase(unittest.TestCase):
         self.alpha = OPCN2(self.spi)
         #self.assertRaises(SPIError, OPCN2, None)
 
-
-
-
     def tearDown(self):
         pass
 
     def test_spi(self):
         self.assertIsInstance(self.spi, spidev.SpiDev)
-
-        self.assertIsInstance(self.spi, spidev.SpiDev)
-
-        self.assertTrue(self.alpha.firmware in [14, 15, 16, 17])
-
-        self.assertTrue(self.alpha.on())
-        sleep(1)
-        self.assertTrue(self.alpha.off())
-
-        sleep(1)
-        self.assertTrue(self.alpha.ping())
 
         sleep(1)
         infostring = self.alpha.read_info_string()
@@ -61,19 +49,22 @@ class SetupTestCase(unittest.TestCase):
         self.assertTrue(self.alpha.fan_on())
         sleep(1)
         self.assertTrue(self.alpha.fan_off())
-'''
+
     def test_firmware(self):
+        sleep(interval)
         self.assertTrue(self.alpha.firmware in [14, 15, 16, 17])
 
     def test_opc(self):
         # Turn on the opc
+        sleep(interval)
         self.assertTrue(self.alpha.on())
-        sleep(2)
+        sleep(interval)
         self.assertTrue(self.alpha.off())
 
     def test_ping(self):
+        sleep(interval)
         self.assertTrue(self.alpha.ping())
-
+'''
     #def test_read_info_string(self):
         #sleep(1)
         #infostring = self.alpha.read_info_string()

@@ -16,13 +16,13 @@ class SetupTestCase(unittest.TestCase):
         pass
 
     def test_spi(self):
-        assertIsInstance(self.spi, spidev.SpiDev)
+        self.assertIsInstance(self.spi, spidev.SpiDev)
 
     def test_opc(self):
         pass
 
     def test_ping(self):
-        self.assertTrue(spi.ping())
+        self.assertTrue(self.alpha.ping())
 
 class TestExceptions(unittest.TestCase):
 

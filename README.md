@@ -7,9 +7,20 @@ Python library for operating the Alphasense OPC-N2 Optical Particle Counter usin
   1. [`py-spidev`](https://github.com/doceme/py-spidev)
 
 ## Installation
-  
-  1. Download the .zip or clone the git repository to your local machine (raspberry pi)
-  2. Unzip the folder if in .zip format
+
+For use on the Raspberry Pi (or any other linux device?), there are two methods for easy installation:
+
+### Using wget
+
+  1. `>>> wget https://github.com/dhhagan/py-opc/archive/master.zip`
+  2. `>>> unzip master.zip`
+  3. `>>> cd py-opc/`
+  4. `>>> sudo python3 setup.py install`
+
+## Using git  
+
+  1. `>>> git clone https://github.com/dhhagan/py-opc.git`
+  2. `>>> cd py-opc/`
   3. `>>> sudo python3 setup.py install`
   
 ## License

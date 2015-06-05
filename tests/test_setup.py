@@ -56,6 +56,8 @@ class SetupTestCase(unittest.TestCase):
         sleep(1)
         self.assertTrue(self.alpha.laser_off())
 
+        sleep(1)
+
         self.assertTrue(self.alpha.fan_on())
         sleep(1)
         self.assertTrue(self.alpha.fan_off())

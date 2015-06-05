@@ -30,6 +30,12 @@ For use on the Raspberry Pi (or any other linux device?), there are two methods 
 ## Documentation
 
   Full documentation coming soon!
+  
+## Unit Testing
+
+  To run unit-tests, run the command:
+  
+    >>> python3 -m unittest discover tests/
 
 ## Sample Script / Getting Started
 

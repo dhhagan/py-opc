@@ -1,6 +1,6 @@
 import unittest
 import spidev
-from .opc import OPCN2
+from opc import OPCN2
 
 class SetupTestCase(unittest.TestCase):
 

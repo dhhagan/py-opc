@@ -15,6 +15,15 @@ class SetupTestCase(unittest.TestCase):
         self.alpha = OPCN2(self.spi)
         #self.assertRaises(SPIError, OPCN2, None)
 
+
+
+
+    def tearDown(self):
+        pass
+
+    def test_spi(self):
+        self.assertIsInstance(self.spi, spidev.SpiDev)
+
         self.assertIsInstance(self.spi, spidev.SpiDev)
 
         self.assertTrue(self.alpha.firmware in [14, 15, 16, 17])
@@ -47,14 +56,7 @@ class SetupTestCase(unittest.TestCase):
         self.assertTrue(self.alpha.fan_on())
         sleep(2)
         self.assertTrue(self.alpha.fan_off())
-
 '''
-    def tearDown(self):
-        pass
-
-    def test_spi(self):
-        self.assertIsInstance(self.spi, spidev.SpiDev)
-
     def test_firmware(self):
         self.assertTrue(self.alpha.firmware in [14, 15, 16, 17])
 

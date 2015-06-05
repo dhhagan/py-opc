@@ -21,34 +21,8 @@ class SetupTestCase(unittest.TestCase):
         pass
 
     def test_spi(self):
+        sleep(interval)
         self.assertIsInstance(self.spi, spidev.SpiDev)
-
-        sleep(1)
-        infostring = self.alpha.read_info_string()
-
-        self.assertTrue('OPC-N2' in infostring)
-
-        vars = self.alpha.read_config_variables()
-        self.assertTrue(vars['Bin Boundary 0'] is not None)
-
-        hist = self.alpha.read_histogram()
-
-        self.assertTrue(hist is not None)
-        self.assertTrue(hist['Temperature'] >= 0.0)
-
-        sleep(1)
-        self.assertTrue(self.alpha.set_fan_power(255))
-
-        sleep(1)
-        self.assertTrue(self.alpha.laser_on())
-        sleep(1)
-        self.assertTrue(self.alpha.laser_off())
-
-        sleep(1)
-
-        self.assertTrue(self.alpha.fan_on())
-        sleep(1)
-        self.assertTrue(self.alpha.fan_off())
 
     def test_firmware(self):
         sleep(interval)
@@ -64,51 +38,59 @@ class SetupTestCase(unittest.TestCase):
     def test_ping(self):
         sleep(interval)
         self.assertTrue(self.alpha.ping())
-'''
-    #def test_read_info_string(self):
-        #sleep(1)
-        #infostring = self.alpha.read_info_string()
 
-        #self.assertTrue('OPC-N2' in infostring)
+    def test_read_info_string(self):
+        sleep(interval)
+        infostring = self.alpha.read_info_string()
+
+        self.assertTrue('OPC-N2' in infostring)
 
     def test_read_config_variables(self):
+        sleep(interval)
         vars = self.alpha.read_config_variables()
         self.assertTrue(vars['Bin Boundary 0'] is not None)
 
     def test_write_config(self):
+        sleep(interval)
         pass
 
     def test_read_histogram(self):
+        sleep(interval)
         hist = self.alpha.read_histogram()
 
         self.assertTrue(hist is not None)
         self.assertTrue(hist['Temperature'] >= 0.0)
 
     def test_save_config(self):
+        sleep(interval)
         pass
 
     def test_bootloader_mode(self):
+        sleep(interval)
         pass
 
     def test_set_fan_power(self):
+        sleep(interval)
         #self.assertRaise(ValueError, self.alpha.set_fan_power, 300)
         self.assertTrue(self.alpha.set_fan_power(255))
 
-    #def test_set_laser_power(self):
+    def test_set_laser_power(self):
         #self.assertRaise(ValueError, self.alpha.set_laser_power(400))
-        #sleep(2)
-        #self.assertTrue(self.alpha.set_laser_power(150))
+        sleep(interval)
+        self.assertTrue(self.alpha.set_laser_power(150))
 
     def test_laser_settings(self):
+        sleep(interval)
         self.assertTrue(self.alpha.laser_on())
-        sleep(2)
+        sleep(interval)
         self.assertTrue(self.alpha.laser_off())
 
     def test_fan_settings(self):
+        sleep(interval)
         self.assertTrue(self.alpha.fan_on())
-        sleep(2)
+        sleep(interval)
         self.assertTrue(self.alpha.fan_off())
-'''
+
 
 if __name__ == '__main__':
     unittest.main()

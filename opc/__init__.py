@@ -109,6 +109,7 @@ class OPCN2:
         try:
             self.firmware = int(''.join(infostring[23:26]))
         except:
+            print (''.join(infostring[23:26]))
             raise FirmwareError("Cannot determine correct firmware for this OPC.")
 
         return ''.join(infostring)

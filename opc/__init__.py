@@ -213,8 +213,8 @@ class OPCN2:
 
         # Bins associated with firmware versions 14 and 15(?)
         if self.firmware < 16:
-            data['Temperature']     = self.__calculate_temp([36:40])
-            data['Pressure']        = self.__calculate_temp([40:44])
+            data['Temperature']     = self.__calculate_temp(resp[36:40])
+            data['Pressure']        = self.__calculate_pressure(resp[40:44])
             data['Sampling Period'] = self.__calculate_period(resp[44:48])
             data['Checksum']        = self.__combine_bytes(resp[48], resp[49])
             data['PM1']             = self.__calculate_float(resp[50:54])
@@ -224,7 +224,7 @@ class OPCN2:
         else:
             tmp = self.__calculate_pressure(resp[36:40])
             if tmp < 50000:
-                data['Temperature'] = self.__calculate_temp([36:40])
+                data['Temperature'] = self.__calculate_temp(resp[36:40])
                 data['Pressure']    = None
             else:
                 data['Temperature'] = None

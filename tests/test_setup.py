@@ -24,6 +24,14 @@ class SetupTestCase(unittest.TestCase):
         sleep(interval)
         self.assertIsInstance(self.spi, spidev.SpiDev)
 
+        sleep(interval)
+        self.assertTrue(self.alpha.set_laser_power(150))
+
+        sleep(interval)
+        infostring = self.alpha.read_info_string()
+
+        self.assertTrue('OPC-N2' in infostring)
+
     def test_firmware(self):
         sleep(interval)
         self.assertTrue(self.alpha.firmware in [14, 15, 16, 17])
@@ -39,11 +47,13 @@ class SetupTestCase(unittest.TestCase):
         sleep(interval)
         self.assertTrue(self.alpha.ping())
 
+'''
     def test_read_info_string(self):
         sleep(interval)
         infostring = self.alpha.read_info_string()
 
         self.assertTrue('OPC-N2' in infostring)
+'''
 
     def test_read_config_variables(self):
         sleep(interval)
@@ -74,10 +84,12 @@ class SetupTestCase(unittest.TestCase):
         #self.assertRaise(ValueError, self.alpha.set_fan_power, 300)
         self.assertTrue(self.alpha.set_fan_power(255))
 
+'''
     def test_set_laser_power(self):
         #self.assertRaise(ValueError, self.alpha.set_laser_power(400))
         sleep(interval)
         self.assertTrue(self.alpha.set_laser_power(150))
+'''
 
     def test_laser_settings(self):
         sleep(interval)

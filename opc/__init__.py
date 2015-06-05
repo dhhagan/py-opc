@@ -106,7 +106,7 @@ class OPCN2:
             infostring.append(chr(resp))
 
         # Set the Firmware variable
-        self.firmware = int(''.join(infostring[23:26]))
+        self.firmware = int(float(''.join(infostring[23:26])))
 
         return ''.join(infostring)
 

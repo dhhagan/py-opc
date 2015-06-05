@@ -1,9 +1,10 @@
 from pkg_resources import get_distribution
-from .exceptions import SPIError
+from .exceptions import SPIError, FirmwareError
 
 from time import sleep
 import spidev
 import struct
+import warnings
 
 __all__ = ['OPCN2']
 __version__ = get_distribution('opc').version
@@ -20,6 +21,13 @@ class OPCN2:
         # Check to make sure the connection is a valid SpiDev instance
         if not isinstance(spi_connection, spidev.SpiDev):
             raise SPIError("This is not an instance of SpiDev.")
+
+        # Set the firmware version upon initialization
+        _firm = self.read_info_string()
+
+        # Raise a Firmware error if the firmware version is not supported
+        if self.firmware not in [14]:
+            raise FirmwareError("Current firmware version {0} is not supported.".format(self.firmware))
 
     def __combine_bytes(self, LSB, MSB):
         ''' returns combined bytes '''
@@ -55,7 +63,10 @@ class OPCN2:
         if len(vals) < 4:
             return None
 
-        return ((vals[3] << 24) | (vals[2] << 16) | (vals[1] << 8) | vals[0]) / 12e6
+        if self.firmware < 16:
+            return ((vals[3] << 24) | (vals[2] << 16) | (vals[1] << 8) | vals[0]) / 12e6
+        else:
+            return self.__calculate_float(vals)
 
     def on(self):
         ''' turns ON the OPC (fan and laser) '''
@@ -95,26 +106,12 @@ class OPCN2:
             infostring.append(chr(resp))
 
         # Set the Firmware variable
-        self.firmware = ''.join(infostring[23:27])
+        self.firmware = int(''.join(infostring[23:26]))
 
         return ''.join(infostring)
 
     def read_config_variables(self):
-        '''
-        reads the configuration variables and returns them as a dictionary
-
-        Byte List:
-         - [0:30]   -> LSB/MSB for 16 bit unsigned ints (bin boundaries)
-         - [30:32]  -> spare bytes
-         - [32:96]  -> 4 bytes for each bin particle volume (4 byte real number)
-         - [96:160] -> 4 bytes for each bin particle density (4 byte real number)
-         - [160:224]-> 4 bytes for each bin sample volume weighting
-         - [224:228]-> 4 byte real number Gain Scaling Coef. (GSC)
-         - [228:232]-> 4 byte real number sample flow rate
-         - [232]    -> 1 byte Laser DAC
-         - [233]    -> 1 byte Fan DAC
-         - [234:256]-> spare bytes
-        '''
+        ''' reads the configuration variables and returns them as a dictionary '''
         config  = []
         data    = {}
         command = 0x3C
@@ -128,19 +125,19 @@ class OPCN2:
             resp = self.cnxn.xfer([0x00])[0]
             config.append(resp)
 
-        # Add the bin bounds to the dictionary of data
+        # Add the bin bounds to the dictionary of data [bytes 0-29]
         for i in range(0, 15):
             data["Bin Boundary {0}".format(i)] = self.__combine_bytes(config[2*i], config[2*i + 1])
 
-        # Add the Bin Particle Volumes (BVP)
+        # Add the Bin Particle Volumes (BVP) [bytes 32-95]
         for i in range(0, 16):
             data["BPV {0}".format(i)] = self.__calculate_float(config[4*i + 32:4*i + 36])
 
-        # Add the Bin Particle Densities (BPD)
+        # Add the Bin Particle Densities (BPD) [bytes 96-159]
         for i in range(0, 16):
             data["BPD {0}".format(i)] = self.__calculate_float(config[4*i + 96:4*i + 100])
 
-        # Add the Bin Sample Volume Weight (BSVW)
+        # Add the Bin Sample Volume Weight (BSVW) [bytes 160-223]
         for i in range(0, 16):
             data["BSVW {0}".format(i)] = self.__calculate_float(config[4*i + 160: 4*i + 164])
 
@@ -149,8 +146,12 @@ class OPCN2:
         data["SFR"] = self.__calculate_float(config[228:232])
 
         # Add laser dac (LDAC) and Fan dac (FanDAC)
-        data["LDAC"] = config[232]
-        data["FanDAC"] = config[233]
+        data["LaserDAC"]    = config[232]
+        data["FanDAC"]      = config[233]
+
+        # If past firmware 15, add other things
+        if self.firmware > 15:
+            data['TOF_SFR'] = config[234]
 
         # Don't know what to do about all of the bytes yet!
         if self.debug:
@@ -167,7 +168,10 @@ class OPCN2:
         return
 
     def read_histogram(self):
-        ''' Reads and resets the histogram bins '''
+        '''
+        Reads and resets the histogram bins, returning the data as a dictionary.
+        If the data transfer fails, returns None
+        '''
         resp = []
         data = {}
 
@@ -206,20 +210,44 @@ class OPCN2:
         data['Bin3 MToF']       = self.__calculate_mtof(resp[33])
         data['Bin5 MToF']       = self.__calculate_mtof(resp[34])
         data['Bin7 MToF']       = self.__calculate_mtof(resp[35])
-        data['Temperature']     = self.__calculate_temp(resp[36:40])
-        data['Pressure']        = self.__calculate_pressure(resp[40:44])
-        data['Period Count']    = self.__calculate_period(resp[44:48])
-        data['Checksum']        = self.__combine_bytes(resp[48], resp[49])
-        data['PM1']             = self.__calculate_float(resp[50:54])
-        data['PM2.5']           = self.__calculate_float(resp[54:58])
-        data['PM10']            = self.__calculate_float(resp[58:])
+
+        # Bins associated with firmware versions 14 and 15(?)
+        if self.firmware < 16:
+            data['Temperature']     = self.__calculate_temp([36:40])
+            data['Pressure']        = self.__calculate_temp([40:44])
+            data['Sampling Period'] = self.__calculate_period(resp[44:48])
+            data['Checksum']        = self.__combine_bytes(resp[48], resp[49])
+            data['PM1']             = self.__calculate_float(resp[50:54])
+            data['PM2.5']           = self.__calculate_float(resp[54:58])
+            data['PM10']            = self.__calculate_float(resp[58:])
+
+        else:
+            tmp = self.__calculate_pressure(resp[36:40])
+            if tmp < 50000:
+                data['Temperature'] = self.__calculate_temp([36:40])
+                data['Pressure']    = None
+            else:
+                data['Temperature'] = None
+                data['Pressure']    = tmp
+
+            data['Sampling Period'] = self.__calculate_period(resp[40:44])
+            data['Checksum']        = self.__combine_bytes(resp[44], resp[45])
+            data['PM1']             = self.__calculate_float(resp[46:50])
+            data['PM2.5']           = self.__calculate_float(resp[50:54])
+            data['PM10']            = self.__calculate_float(resp[54:])
 
         # Calculate the sum of the histogram bins
-        data['histogram sum'] = data['Bin 0'] + data['Bin 1'] + data['Bin 2']   + \
+        histogram_sum = data['Bin 0'] + data['Bin 1'] + data['Bin 2']   + \
                 data['Bin 3'] + data['Bin 4'] + data['Bin 5'] + data['Bin 6']   + \
                 data['Bin 7'] + data['Bin 8'] + data['Bin 9'] + data['Bin 10']  + \
                 data['Bin 11'] + data['Bin 12'] + data['Bin 13'] + data['Bin 14'] + \
                 data['Bin 15']
+
+        # Check that checksum and the least significant bits of the sum of histogram bins
+        # are equivilant
+        if (histogram_sum & 0x0000FFFF) != data['Checksum']:
+            warnings.warn("Data transfer was incomplete.")
+            return None
 
         # If debug is True, print out the bytes!
         if self.debug:

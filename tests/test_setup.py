@@ -32,6 +32,7 @@ class SetupTestCase(unittest.TestCase):
         sleep(2)
         self.assertTrue(self.alpha.off())
 
+        sleep(1)
         self.assertTrue(self.alpha.ping())
 
         sleep(1)

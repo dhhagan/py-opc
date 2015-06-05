@@ -106,7 +106,10 @@ class OPCN2:
             infostring.append(chr(resp))
 
         # Set the Firmware variable
-        self.firmware = int(float(''.join(infostring[23:26])))
+        try:
+            self.firmware = int(''.join(infostring[23:26]))
+        except:
+            raise FirmwareError("Cannot determine correct firmware for this OPC.")
 
         return ''.join(infostring)
 

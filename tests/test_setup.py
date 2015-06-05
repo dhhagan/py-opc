@@ -29,7 +29,7 @@ class SetupTestCase(unittest.TestCase):
         self.assertTrue(self.alpha.firmware in [14, 15, 16, 17])
 
         self.assertTrue(self.alpha.on())
-        sleep(2)
+        sleep(1)
         self.assertTrue(self.alpha.off())
 
         sleep(1)
@@ -48,14 +48,16 @@ class SetupTestCase(unittest.TestCase):
         self.assertTrue(hist is not None)
         self.assertTrue(hist['Temperature'] >= 0.0)
 
+        sleep(1)
         self.assertTrue(self.alpha.set_fan_power(255))
 
+        sleep(1)
         self.assertTrue(self.alpha.laser_on())
-        sleep(2)
+        sleep(1)
         self.assertTrue(self.alpha.laser_off())
 
         self.assertTrue(self.alpha.fan_on())
-        sleep(2)
+        sleep(1)
         self.assertTrue(self.alpha.fan_off())
 '''
     def test_firmware(self):

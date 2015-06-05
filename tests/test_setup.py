@@ -15,6 +15,40 @@ class SetupTestCase(unittest.TestCase):
         self.alpha = OPCN2(self.spi)
         #self.assertRaises(SPIError, OPCN2, None)
 
+        self.assertIsInstance(self.spi, spidev.SpiDev)
+
+        self.assertTrue(self.alpha.firmware in [14, 15, 16, 17])
+
+        self.assertTrue(self.alpha.on())
+        sleep(2)
+        self.assertTrue(self.alpha.off())
+
+        self.assertTrue(self.alpha.ping())
+
+        sleep(1)
+        infostring = self.alpha.read_info_string()
+
+        self.assertTrue('OPC-N2' in infostring)
+
+        vars = self.alpha.read_config_variables()
+        self.assertTrue(vars['Bin Boundary 0'] is not None)
+
+        hist = self.alpha.read_histogram()
+
+        self.assertTrue(hist is not None)
+        self.assertTrue(hist['Temperature'] >= 0.0)
+
+        self.assertTrue(self.alpha.set_fan_power(255))
+
+        self.assertTrue(self.alpha.laser_on())
+        sleep(2)
+        self.assertTrue(self.alpha.laser_off())
+
+        self.assertTrue(self.alpha.fan_on())
+        sleep(2)
+        self.assertTrue(self.alpha.fan_off())
+
+'''
     def tearDown(self):
         pass
 
@@ -76,7 +110,7 @@ class SetupTestCase(unittest.TestCase):
         self.assertTrue(self.alpha.fan_on())
         sleep(2)
         self.assertTrue(self.alpha.fan_off())
-
+'''
 
 if __name__ == '__main__':
     unittest.main()

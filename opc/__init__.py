@@ -26,7 +26,7 @@ class OPCN2:
         _firm = self.read_info_string()
 
         # Raise a Firmware error if the firmware version is not supported
-        if self.firmware not in [14]:
+        if self.firmware not in [14, 15, 16, 17]:
             raise FirmwareError("Current firmware version {0} is not supported.".format(self.firmware))
 
     def __combine_bytes(self, LSB, MSB):

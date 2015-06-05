@@ -84,7 +84,7 @@ class OPCN2:
 
         return True if b1 == 0xF3 and b2 == 0x03 else False
 
-    def check_status(self):
+    def ping(self):
         ''' returns the status of the OPC-N2 as a boolean '''
         b = self.cnxn.xfer([0xCF])[0]           # send the command byte
 

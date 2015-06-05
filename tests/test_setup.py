@@ -34,6 +34,7 @@ class SetupTestCase(unittest.TestCase):
         self.assertTrue(self.alpha.ping())
 
     def test_read_info_string(self):
+        sleep(1)
         infostring = self.alpha.read_info_string()
 
         self.assertTrue('OPC-N2' in infostring)
@@ -63,6 +64,7 @@ class SetupTestCase(unittest.TestCase):
 
     def test_set_laser_power(self):
         #self.assertRaise(ValueError, self.alpha.set_laser_power(400))
+        sleep(2)
         self.assertTrue(self.alpha.set_laser_power(150))
 
     def test_laser_settings(self):

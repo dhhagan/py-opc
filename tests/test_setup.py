@@ -1,6 +1,6 @@
 import unittest
 import spidev
-form time import sleep
+from time import sleep
 from opc import OPCN2
 from opc.exceptions import SPIError, FirmwareError
 

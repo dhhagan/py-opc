@@ -37,7 +37,7 @@ class OPCN2:
         ''' returns a float from array of 4 bytes '''
         if len(byte_array) != 4:
             return None
-            
+
         return struct.unpack('>f', bytes(reversed(byte_array)))[0]
 
     def __calculate_mtof(self, mtof):
@@ -240,7 +240,7 @@ class OPCN2:
             data['Checksum']        = self.__combine_bytes(resp[44], resp[45])
             data['PM1']             = self.__calculate_float(resp[46:50])
             data['PM2.5']           = self.__calculate_float(resp[50:54])
-            data['PM10']            = self.__calculate_float(resp[54:58])
+            data['PM10']            = self.__calculate_float(resp[54:])
 
         # Calculate the sum of the histogram bins
         histogram_sum = data['Bin 0'] + data['Bin 1'] + data['Bin 2']   + \
@@ -249,12 +249,6 @@ class OPCN2:
                 data['Bin 11'] + data['Bin 12'] + data['Bin 13'] + data['Bin 14'] + \
                 data['Bin 15']
 
-        # Check that checksum and the least significant bits of the sum of histogram bins
-        # are equivilant
-        if (histogram_sum & 0x0000FFFF) != data['Checksum']:
-            warnings.warn("Data transfer was incomplete.")
-            return None
-
         # If debug is True, print out the bytes!
         if self.debug:
             count = 0
@@ -262,6 +256,12 @@ class OPCN2:
             for each in resp:
                 print ("\t{0}: {1}".format(count, each))
                 count += 1
+
+        # Check that checksum and the least significant bits of the sum of histogram bins
+        # are equivilant
+        if (histogram_sum & 0x0000FFFF) != data['Checksum']:
+            warnings.warn("Data transfer was incomplete.")
+            return None
 
         return data
 

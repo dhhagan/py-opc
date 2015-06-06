@@ -35,6 +35,9 @@ class OPCN2:
 
     def __calculate_float(self, byte_array):
         ''' returns a float from array of 4 bytes '''
+        if len(byte_array) != 4:
+            return None
+            
         return struct.unpack('>f', bytes(reversed(byte_array)))[0]
 
     def __calculate_mtof(self, mtof):
@@ -237,7 +240,7 @@ class OPCN2:
             data['Checksum']        = self.__combine_bytes(resp[44], resp[45])
             data['PM1']             = self.__calculate_float(resp[46:50])
             data['PM2.5']           = self.__calculate_float(resp[50:54])
-            data['PM10']            = self.__calculate_float(resp[54:])
+            data['PM10']            = self.__calculate_float(resp[54:58])
 
         # Calculate the sum of the histogram bins
         histogram_sum = data['Bin 0'] + data['Bin 1'] + data['Bin 2']   + \

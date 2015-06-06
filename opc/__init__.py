@@ -202,7 +202,6 @@ class OPCN2:
         for i in range(self.histogramBytes):
             r = self.cnxn.xfer([0x00])[0]
             resp.append(r)
-            sleep(6e-6)
 
         # convert to real things and store in dictionary!
         data['Bin 0']           = self.__combine_bytes(resp[0], resp[1])
@@ -238,7 +237,7 @@ class OPCN2:
 
         else:
             tmp = self.__calculate_pressure(resp[36:40])
-            if tmp < 50000:
+            if tmp < 5000:
                 data['Temperature'] = self.__calculate_temp(resp[36:40])
                 data['Pressure']    = None
             else:

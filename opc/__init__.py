@@ -29,6 +29,14 @@ class OPCN2:
         if self.firmware not in [14, 15, 16, 17]:
             raise FirmwareError("Current firmware version {0} is not supported.".format(self.firmware))
 
+        # Set some things based on firmware version
+        if self.firmware in [14, 15]:
+            self.histogramBytes = 62
+        elif self.firmware in [16, 17]:
+            self.histogramBytes = 58
+        else:
+            pass
+
     def __combine_bytes(self, LSB, MSB):
         ''' returns combined bytes '''
         return (MSB << 8) | LSB
@@ -191,11 +199,10 @@ class OPCN2:
         sleep(10e-3)
 
         # read the histogram
-        numBytes = 58 if self.firmware in [16, 17] else 62
-        
-        for i in range(numBytes):
+        for i in range(self.histogramBytes):
             r = self.cnxn.xfer([0x00])[0]
             resp.append(r)
+            sleep(6e-6)
 
         # convert to real things and store in dictionary!
         data['Bin 0']           = self.__combine_bytes(resp[0], resp[1])

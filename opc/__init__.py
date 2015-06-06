@@ -191,7 +191,9 @@ class OPCN2:
         sleep(10e-3)
 
         # read the histogram
-        for i in range(62):
+        numBytes = 58 if self.firmware in [16, 17] else 62
+        
+        for i in range(numBytes):
             r = self.cnxn.xfer([0x00])[0]
             resp.append(r)
 

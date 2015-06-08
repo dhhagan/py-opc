@@ -29,14 +29,6 @@ class OPCN2:
         if self.firmware not in [14, 15, 16, 17]:
             raise FirmwareError("Current firmware version {0} is not supported.".format(self.firmware))
 
-        # Set some things based on firmware version
-        if self.firmware in [14, 15]:
-            self.histogramBytes = 62
-        elif self.firmware in [16, 17]:
-            self.histogramBytes = 58
-        else:
-            pass
-
     def __combine_bytes(self, LSB, MSB):
         ''' returns combined bytes '''
         return (MSB << 8) | LSB
@@ -46,7 +38,7 @@ class OPCN2:
         if len(byte_array) != 4:
             return None
 
-        return struct.unpack('>f', bytes(reversed(byte_array)))[0]
+        return struct.unpack('f', struct.pack('4B', *byte_array))[0]
 
     def __calculate_mtof(self, mtof):
         '''
@@ -143,7 +135,7 @@ class OPCN2:
         for i in range(0, 15):
             data["Bin Boundary {0}".format(i)] = self.__combine_bytes(config[2*i], config[2*i + 1])
 
-        # Add the Bin Particle Volumes (BVP) [bytes 32-95]
+        # Add the Bin Particle Volumes (BPV) [bytes 32-95]
         for i in range(0, 16):
             data["BPV {0}".format(i)] = self.__calculate_float(config[4*i + 32:4*i + 36])
 
@@ -199,7 +191,7 @@ class OPCN2:
         sleep(10e-3)
 
         # read the histogram
-        for i in range(self.histogramBytes):
+        for i in range(62):
             r = self.cnxn.xfer([0x00])[0]
             resp.append(r)
 
@@ -236,19 +228,24 @@ class OPCN2:
             data['PM10']            = self.__calculate_float(resp[58:])
 
         else:
-            tmp = self.__calculate_pressure(resp[36:40])
+            data['SFR']             = self.__calculate_float(resp[36:40])
+
+            tmp = self.__calculate_pressure(resp[40:44])
             if tmp < 5000:
-                data['Temperature'] = self.__calculate_temp(resp[36:40])
+                data['Temperature'] = self.__calculate_temp(resp[40:44])
+                data['Pressure']    = None
+            elif tmp > 1000000:
+                data['Temperature'] = None
                 data['Pressure']    = None
             else:
                 data['Temperature'] = None
                 data['Pressure']    = tmp
 
-            data['Sampling Period'] = self.__calculate_period(resp[40:44])
-            data['Checksum']        = self.__combine_bytes(resp[44], resp[45])
-            data['PM1']             = self.__calculate_float(resp[46:50])
-            data['PM2.5']           = self.__calculate_float(resp[50:54])
-            data['PM10']            = self.__calculate_float(resp[54:])
+            data['Sampling Period'] = self.__calculate_float(resp[44:48])
+            data['Checksum']        = self.__combine_bytes(resp[48], resp[49])
+            data['PM1']             = self.__calculate_float(resp[50:54])
+            data['PM2.5']           = self.__calculate_float(resp[54:58])
+            data['PM10']            = self.__calculate_float(resp[58:])
 
         # Calculate the sum of the histogram bins
         histogram_sum = data['Bin 0'] + data['Bin 1'] + data['Bin 2']   + \
@@ -267,9 +264,9 @@ class OPCN2:
 
         # Check that checksum and the least significant bits of the sum of histogram bins
         # are equivilant
-        #if (histogram_sum & 0x0000FFFF) != data['Checksum']:
-        #    warnings.warn("Data transfer was incomplete.")
-        #    return None
+        if (histogram_sum & 0x0000FFFF) != data['Checksum']:
+            warnings.warn("Data transfer was incomplete.")
+            return None
 
         return data
 

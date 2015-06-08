@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.14'
+__version__ = '0.1.0'
 
 from distutils.core import setup
 
@@ -18,7 +18,6 @@ setup(
         'Development Status :: 1 - alpha',
         'Operating System :: OS Independent',
         'Intended Audience :: Science/Research',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Topic :: Software Development',
         'Topic :: System :: Hardware',

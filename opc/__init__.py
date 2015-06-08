@@ -71,6 +71,16 @@ class OPCN2:
         else:
             return self.__calculate_float(vals)
 
+    def __calculate_bin_boundary(self, val):
+        '''
+            Returns the bin boundary value in micrometers.
+            Assumes a 12-bit ADC with 17.5 um Full-Scale.
+        '''
+        fullscale   = 17.5    # micrometers
+        adc         = 12
+
+        return (val / (2**adc - 1)) * fullscale
+
     def on(self):
         ''' turns ON the OPC (fan and laser) '''
         b1 = self.cnxn.xfer([0x03])[0]          # send the command byte

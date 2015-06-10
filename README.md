@@ -29,7 +29,7 @@ For use on the Raspberry Pi (or any other linux device?), there are two methods 
 
 ## Documentation
 
-  Full documentation coming soon!
+  Full documentation can be found [here](http://dhhagan.github.io/py-opc/).
   
 ## Unit Testing
 

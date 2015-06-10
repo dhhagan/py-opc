@@ -1,0 +1,8 @@
+site_name: py-opc
+pages:
+- py-opc: index.md
+- Examples: examples.md
+- API: api.md
+
+theme: readthedocs
+repo_url: https://github.com/dhhagan/py-opc/

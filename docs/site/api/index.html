@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>API - py-opc</title>
+  
+
+  <link rel="shortcut icon" href="../img/favicon.ico">
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../css/highlight.css">
+
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "API";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js"></script>
+  <script src="../js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="../js/highlight.pack.js"></script>
+  <script src="../js/theme.js"></script> 
+
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> py-opc</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <ul class="current">
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="..">py-opc</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../examples/">Examples</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 current">
+        <a class="current" href="./">API</a>
+        
+            <ul>
+            
+                <li class="toctree-l3"><a href="#opcn2">OPCN2</a></li>
+                
+                    <li><a class="toctree-l4" href="#attributes">Attributes</a></li>
+                
+            
+                <li class="toctree-l3"><a href="#exceptions">Exceptions</a></li>
+                
+                    <li><a class="toctree-l4" href="#spierror">SPIError</a></li>
+                
+                    <li><a class="toctree-l4" href="#firmwareerror">FirmwareError</a></li>
+                
+            
+            </ul>
+        
+    </li>
+<li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">py-opc</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>API</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="https://github.com/dhhagan/py-opc/" class="icon icon-github"> Edit on GitHub</a>
+        
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h2 id="opcn2">OPCN2</h2>
+<p><em>class</em> <strong>opc.OPCN2(spi_connection, debug = False)</strong></p>
+<p>The <em>OPCN2</em> class takes the <strong>spidev.SpiDev</strong> instance as a required argument, with the option to also set <strong>debug</strong> mode. If there is an issue with the spidev connection, an <strong>opc.SPIError</strong>  will be raised. If the firmware cannot be determined, an <strong>opc.FirmwareError</strong> will be raised.</p>
+<h4 id="attributes">Attributes</h4>
+<div style="margin-left:25px; margin-bottom:10px">
+  <h3>cnxn</h3>
+  <p>
+    cnxn is an instance of <bold><em>spidev.SpiDev</em></bold>.
+  </p>
+</div>
+
+<div style="margin-left:25px; margin-bottom:10px">
+  <h3>debug</h3>
+  <p>
+    debug is a <bold><em>boolean</em></bold>.
+  </p>
+  <p>
+    if True, some useful information is printed out!
+  </p>
+</div>
+
+<div style="margin-left:25px; margin-bottom:10px">
+  <h3>firmware</h3>
+  <p>
+    firmware is an <bold><em>integer</em></bold>.
+  </p>
+  <p>
+    Firmware version of the Alphasense OPC-N2.
+  </p>
+</div>
+
+<div style="margin-left:25px; margin-bottom:10px">
+  <h3>on()</h3>
+  <p>
+    Returns <bold><em>True</em></bold> if the fan and laser are successfully turned ON.
+  </p>
+</div>
+
+<div style="margin-left:25px; margin-bottom:10px">
+  <h3>off()</h3>
+  <p>
+  Returns <bold><em>True</em></bold> if the fan and laser are successfully turned OFF.
+  </p>
+</div>
+
+<div style="margin-left:25px; margin-bottom:10px">
+  <h3>ping()</h3>
+  <p>
+    Returns <bold><em>True</em></bold> if the <bold><em>check_status</em></bold> command is executed correctly.
+  </p>
+</div>
+
+<div style="margin-left:25px; margin-bottom:10px">
+  <h3>read_info_string()</h3>
+  <p>
+    Returns a <bold><em>string</em></bold> containing the OPC Firmware version. This method also sets the firmware version attribute; if the firmware version is not supported, a <bold><em>FirmwareError</em></bold> is raised.
+  </p>
+</div>
+
+<div style="margin-left:25px; margin-bottom:10px">
+  <h3>read_config_variables()</h3>
+  <p>
+    Returns a dictionary containing all configuration variables as described below.
+  </p>
+  <table>
+    <thead>
+      <th>Key</th>
+      <th>Value</th>
+      <th>Description</th>
+    </thead>
+
+    <tbody>
+      <tr>
+        <td>Bin Boundary XX</td>
+        <td>unsigned 16-bit integer</td>
+        <td>Bin boundaries 0-14 are ADC values representing the bin boundary</td>
+      </tr>
+      <tr>
+        <td>BPV XX</td>
+        <td>Float</td>
+        <td>Bin Particle Volumes 0-15</td>
+      </tr>
+      <tr>
+        <td>BPD XX</td>
+        <td>Float</td>
+        <td>Bin Particle Densities 0-15</td>
+      </tr>
+      <tr>
+        <td>BSVW XX</td>
+        <td>Float</td>
+        <td>Bin Sample Volume Weightings 0-15</td>
+      </tr>
+      <tr>
+        <td>GSC</td>
+        <td>Float</td>
+        <td>Gain Scaling Coefficient</td>
+      </tr>
+      <tr>
+        <td>SFR</td>
+        <td>Float</td>
+        <td>Sample Flow Rate in ml/s</td>
+      </tr>
+      <tr>
+        <td>LaserDAC</td>
+        <td>8 bit integer</td>
+        <td>Laser power as an 8-bit integer (0-255)</td>
+      </tr>
+      <tr>
+        <td>FanDAC</td>
+        <td>8 bit integer</td>
+        <td>Fan speed as an 8-bit integer (0-255)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div style="margin-left:25px; margin-bottom:10px">
+  <h3>write_config_variables()</h3>
+  <p>
+    This method is currently not implemented as of v0.1x
+  </p>
+</div>
+
+<div style="margin-left:25px; margin-bottom:10px">
+  <h3>read_histogram()</h3>
+  <p>
+    Returns a dictionary containing the histogram as described in Alphasense' documentation.
+  </p>
+  <table>
+    <thead>
+      <th>Key</th>
+      <th>Value</th>
+      <th>Description</th>
+    </thead>
+
+    <tbody>
+      <tr>
+        <td>Bin XX</td>
+        <td>unsigned 16-bit integer</td>
+        <td>Bins 0-15 are integers representing the histogram count for a given bin.</td>
+      </tr>
+      <tr>
+        <td>Bin1 MToF</td>
+        <td>Float</td>
+        <td>Returns the average amount of time that particles in Bin 1 took to cross the path of the OPC in microseconds</td>
+      </tr>
+      <tr>
+        <td>Bin3 MToF</td>
+        <td>Float</td>
+        <td>Returns the average amount of time that particles in Bin 3 took to cross the path of the OPC in microseconds</td>
+      </tr>
+      <tr>
+        <td>Bin5 MToF</td>
+        <td>Float</td>
+        <td>Returns the average amount of time that particles in Bin 5 took to cross the path of the OPC in microseconds</td>
+      </tr>
+      <tr>
+        <td>Bin7 MToF</td>
+        <td>Float</td>
+        <td>Returns the average amount of time that particles in Bin 7 took to cross the path of the OPC in microseconds</td>
+      </tr>
+      <tr>
+        <td>Temperature</td>
+        <td>Float</td>
+        <td>Returns the temperature in degrees celcius</td>
+      </tr>
+      <tr>
+        <td>Pressure</td>
+        <td>8 bit integer</td>
+        <td>Returns the pressure in Pascals</td>
+      </tr>
+      <tr>
+        <td>Sampling Period</td>
+        <td>8 bit integer</td>
+        <td>Returns the actual sampling period in seconds.</td>
+      </tr>
+      <tr>
+        <td>Checksum</td>
+        <td>16 bit unsigned integer</td>
+        <td>Returns the total sum of histogram counts across all bins.</td>
+      </tr>
+      <tr>
+        <td>PM1</td>
+        <td>Float</td>
+        <td>Returns the PM1 value in micrograms/m3</td>
+      </tr>
+      <tr>
+        <td>PM2.5</td>
+        <td>Float</td>
+        <td>Returns the PM2.5 value in micrograms/m3</td>
+      </tr>
+      <tr>
+        <td>PM10</td>
+        <td>Float</td>
+        <td>Returns the PM10 value in micrograms/m3</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div style="margin-left:25px; margin-bottom:10px">
+  <h3>save_config_variables()</h3>
+  <p>
+    Saves the config variables to non-volatile memory.
+  </p>
+</div>
+
+<div style="margin-left:25px; margin-bottom:10px">
+  <h3>enter_bootloader_mode()</h3>
+  <p>
+    Enter bootloader mode.
+  </p>
+</div>
+
+<div style="margin-left:25px; margin-bottom:10px">
+  <h3>set_fan_power(fan_value)</h3>
+  <p>
+    Set the fan power as an 8-bit unsigned integer. If the value is out of range (>255), a ValueError is raised.
+  </p>
+</div>
+
+<div style="margin-left:25px; margin-bottom:10px">
+  <h3>set_laser_power(laser_value)</h3>
+  <p>
+    Set the laser power as an 8-bit unsigned integer. If the value is out of range (>255), a ValueError is raised.
+  </p>
+</div>
+
+<div style="margin-left:25px; margin-bottom:10px">
+  <h3>laser_on()</h3>
+  <p>
+    Returns True if the laser is successfully turned ON.
+  </p>
+</div>
+
+<div style="margin-left:25px; margin-bottom:10px">
+  <h3>laser_off()</h3>
+  <p>
+    Returns True if the laser is successfully turned OFF.
+  </p>
+</div>
+
+<div style="margin-left:25px; margin-bottom:10px">
+  <h3>fan_on()</h3>
+  <p>
+    Returns True if the fan is successfully turned ON.
+  </p>
+</div>
+
+<div style="margin-left:25px; margin-bottom:10px">
+  <h3>fan_off()</h3>
+  <p>
+    Returns True if the fan is successfully turned OFF.
+  </p>
+</div>
+
+<h1 id="exceptions">Exceptions</h1>
+<p>There are two custom exceptions that can be raised from within the opc library.</p>
+<h4 id="spierror">SPIError</h4>
+<p>The SpiError is raised upon OPCN2 initialization if the spi connection is not valid.</p>
+<h4 id="firmwareerror">FirmwareError</h4>
+<p>The FirmwareError is raised if the firmware version is either not valid or not supported.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../examples/" class="btn btn-neutral" title="Examples"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+	  
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+<div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../examples/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+    </span>
+</div>
+
+</body>
+</html>

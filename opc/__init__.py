@@ -6,7 +6,7 @@ import spidev
 import struct
 import warnings
 
-__all__ = ['OPCN2']
+__all__ = ['OPCN2', 'OPCN1']
 __version__ = get_distribution('opc').version
 
 class OPC(object):
@@ -80,13 +80,9 @@ class OPC(object):
 
 class OPCN1(OPC):
     def __init__(self, spi_connection, debug = False, **kwargs):
-        self.spi_cnxn   = spi_connection
-        self.debug      = debug
-        self.model      = 'N1'
-
-        super(OPC, self).__init__(spi_connection = self.spi_cnxn,
-                                       debug = self.debug,
-                                       model = self.model)
+        super(self.__class__, self).__init__(spi_connection = spi_connection,
+                                        debug = debug,
+                                        model = 'N1')
 
     def on(self):
         ''' Turn on the OPC: returns a boolean value '''

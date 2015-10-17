@@ -5,6 +5,7 @@ from time import sleep
 import spidev
 import struct
 import warnings
+import re
 
 __all__ = ['OPCN2', 'OPCN1']
 __version__ = get_distribution('opc').version
@@ -310,13 +311,15 @@ class OPCN2:
             resp = self.cnxn.xfer([0x00])[0]
             infostring.append(chr(resp))
 
+        infostring = ''.join(infostring)
+
         # Set the Firmware variable
         try:
-            self.firmware = int(''.join(infostring[23:26]))
+            self.firmware = int(re.findall("\d{3}", infostring)[0])
         except:
-            raise FirmwareError("Cannot determine correct firmware for this OPC.")
+            raise FirmwareError("Cannot determine correct firmware for this OPC: {}".format(infostring))
 
-        return ''.join(infostring)
+        return infostring
 
     def read_config_variables(self):
         ''' reads the configuration variables and returns them as a dictionary '''

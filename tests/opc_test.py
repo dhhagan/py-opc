@@ -6,8 +6,40 @@ from opc.exceptions import SPIError, FirmwareError
 
 interval = 1
 
+'''
+class MockSpiDev(spidev.SpiDev):
+    def __init__(self):
+        super(MockSpiDev, self).__init__(**kwargs)
+
+    def open(bus, device):
+        return True
+
+    def xfer(vals = []):
+        return True
+
+    def readbytes(n):
+        return True
+
+    def writebytes(vals = []):
+        return True
+
+    def close():
+        return True
+
+#class MockOPC(OPCN2):
+
+'''
 class SetupTestCase(unittest.TestCase):
 
+    def setUp(self):
+        self.spi = spidev.SpiDev()
+
+        self.assertIsInstance(self.spi, spidev.SpiDev)
+
+    def tearDown(self):
+        pass
+        
+    '''
     def setUp(self):
         self.spi = spidev.SpiDev()
         self.spi.open(0, 0)
@@ -91,7 +123,7 @@ class SetupTestCase(unittest.TestCase):
         self.assertTrue(self.alpha.fan_on())
         sleep(interval)
         self.assertTrue(self.alpha.fan_off())
-
+    '''
 
 if __name__ == '__main__':
     unittest.main()

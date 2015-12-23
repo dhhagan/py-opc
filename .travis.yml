@@ -1,0 +1,19 @@
+language: python
+python:
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.5-dev" # 3.5 development branch
+  - "nightly" # currently points to 3.6-dev
+
+install:
+  - "pip install coverage"
+  - "pip install coveralls"
+  - "pip install spidev"
+
+script:
+  - "coverage run --source=opc setup.py test"
+  
+after_success:
+  coveralls

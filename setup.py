@@ -5,7 +5,7 @@
     Written originally by David H Hagan
 '''
 
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 
 try:
     from setuptools import setup
@@ -24,7 +24,7 @@ setup(
     keywords = ['opc', 'alphasense', 'atmospheric chemistry'],
     test_suite = 'tests',
     classifiers = [
-        'Development Status :: 3 - alpha',
+        'Development Status :: 3 - Alpha',
         'Operating System :: OS Independent',
         'Intended Audience :: Science/Research',
         'Intended Audience :: Developers',
@@ -35,10 +35,7 @@ setup(
 		'Programming Language :: Python :: 3.5',
 		'Topic :: Scientific/Engineering :: Atmospheric Science',
 		'Topic :: Software Development',
-		'Topic :: Software Development :: Libraries :: Python Modules'
-        'Topic :: Software Development',
         'Topic :: System :: Hardware',
-        'Topic :: System :: Hardware Drivers',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ]
 )

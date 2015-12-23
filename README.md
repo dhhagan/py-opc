@@ -13,14 +13,17 @@ Python library for operating the Alphasense OPC-N2 Optical Particle Counter usin
 
 For use on the Raspberry Pi (or any other linux device?), there are two methods for easy installation:
 
-### Using wget
+### pip (preferred)
 
-  1. `>>> wget https://github.com/dhhagan/py-opc/archive/master.zip`
-  2. `>>> unzip master.zip`
-  3. `>>> cd py-opc/`
-  4. `>>> sudo python3 setup.py install`
+Install the py-opc package through PyPi:
 
-## Using git  
+    >>> pip install py-opc
+
+Upgrade to the newest version:
+
+    >>> pip install -U py-opc
+
+## git (development)
 
   1. `>>> git clone https://github.com/dhhagan/py-opc.git`
   2. `>>> cd py-opc/`
@@ -34,16 +37,11 @@ For use on the Raspberry Pi (or any other linux device?), there are two methods 
 
   Full documentation can be found [here](http://dhhagan.github.io/py-opc/).
 
-## Unit Testing
-
-  To run unit-tests, run the command:
-
-    >>> python3 -m unittest discover tests/
 
 ## Sample Script / Getting Started
 
     import spidev
-    from opc import OPCN2
+    import opc
     from time import sleep
 
     spi = spidev.SpiDev()
@@ -51,7 +49,7 @@ For use on the Raspberry Pi (or any other linux device?), there are two methods 
     spi.mode = 1
     spi.max_speed_hz = 500000
 
-    alphasense = OPCN2(spi)
+    alphasense = opc.OPCN2(spi)
 
     # Turn the opc ON
     alphasense.on()

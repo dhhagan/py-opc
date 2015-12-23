@@ -38,7 +38,7 @@ class SetupTestCase(unittest.TestCase):
 
     def tearDown(self):
         pass
-
+        
     '''
     def setUp(self):
         self.spi = spidev.SpiDev()

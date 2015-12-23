@@ -92,6 +92,5 @@ class SetupTestCase(unittest.TestCase):
         sleep(interval)
         self.assertTrue(self.alpha.fan_off())
 
-
 if __name__ == '__main__':
     unittest.main()

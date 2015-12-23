@@ -10,7 +10,7 @@ python:
 install:
   - "pip install coverage"
   - "pip install coveralls"
-  - "pip install py-spidev"
+  - "pip install spidev"
 
 script:
   - "coverage run --source=py-opc setup.py test"

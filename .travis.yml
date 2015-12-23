@@ -10,7 +10,7 @@ python:
 install:
   - "pip install coverage"
   - "pip install coveralls"
-  - "apt-get install python-dev"
+  - "pip install python-dev"
   - "pip install py-spidev"
 
 script:

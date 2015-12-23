@@ -8,7 +8,7 @@ import warnings
 import re
 
 __all__ = ['OPCN2', 'OPCN1']
-__version__ = get_distribution('opc').version
+__version__ = get_distribution('py-opc').version
 
 class OPC(object):
     '''

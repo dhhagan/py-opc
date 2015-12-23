@@ -13,4 +13,4 @@ install:
   - "pip install spidev"
 
 script:
-  - "coverage run --source=py-opc setup.py test"
+  - "coverage run --source=opc setup.py test"

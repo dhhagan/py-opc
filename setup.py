@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 '''
     py-opc is a python library to operate the Alphasense
     OPC-N2 optical particle counter.

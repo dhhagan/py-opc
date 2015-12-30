@@ -17,7 +17,7 @@ import os
 import sphinx_rtd_theme
 import mock
 
-MOCK_MODULES = ['spidev', 'py-opc']
+MOCK_MODULES = ['spidev']
 for each in MOCK_MODULES:
     sys.modules[each] = mock.Mock()
 

@@ -11,9 +11,21 @@ __all__ = ['OPCN2', 'OPCN1']
 __version__ = get_distribution('py-opc').version
 
 class OPC(object):
-    '''
-    Generic class for any Alphasense OPC Instance
-    '''
+    """Generic class for any Alphasense OPC. Provides the common methods and calculations
+    for each OPC.
+
+    :param spi_connection: spidev.SpiDev connection
+    :param debug: Set true to print data to console while running
+    :param model: Model number of the OPC ('N1' or 'N2') set by the parent class
+
+    :raises: SPIError
+
+    :type spi_connection: spidev.SpiDev
+    :type debug: boolean
+    :type model: string
+
+    :rtype: opc.OPC
+    """
     def __init__(self, spi_connection, **kwargs):
         self.cnxn       = spi_connection
         self.debug      = kwargs.get('debug', False)
@@ -39,32 +51,67 @@ class OPC(object):
                 raise FirmwareError("Cannot determine correct firmware for this OPC: {}".format(self.read_info_string()))
 
     def _combine_bytes(self, LSB, MSB):
-        ''' Returns the combined Bytes '''
+        """Returns the combined LSB and MSB
+
+        :param LSB: Least Significant Byte
+        :param MSB: Most Significant Byte
+
+        :type LSB: byte
+        :type MSB: byte
+
+        :returns: 16-bit unsigned int
+        """
         return (MSB << 8) | LSB
 
     def _calculate_float(self, byte_array):
-        ''' Returns a float from an array of 4 bytes '''
+        """Returns an IEEE 754 float from an array of 4 bytes
+
+        :param byte_array: Expects an array of 4 bytes
+
+        :type byte_array: array
+
+        :returns: float
+        """
         if len(byte_array) != 4:
             return None
 
         return struct.unpack('f', struct.pack('4B', *byte_array))[0]
 
     def _calculate_mtof(self, mtof):
-        '''
-            calculates the average amount of time that particles in
-            this bin took to cross the path of the OPC units -> [micro-seconds]
-        '''
+        """Returns the average amount of time that particles in a bin
+        took to cross the path of the laser [units -> microseconds]
+
+        :param mtof: mass time-of-flight
+
+        :type mtof: float
+
+        :returns: float
+        """
         return mtof / 3.0
 
     def _calculate_temp(self, vals):
-        ''' calculates the temperature in degrees celcius '''
+        """Calculates the temperature in degrees celcius
+
+        :param vals: array of bytes
+
+        :type vals: array
+
+        :returns: float
+        """
         if len(vals) < 4:
             return None
 
         return ((vals[3] << 24) | (vals[2] << 16) | (vals[1] << 8) | vals[0]) / 10.0
 
     def _calculate_pressure(self, vals):
-        ''' calculate the pressure in pascals '''
+        """Calculates the pressure in pascals
+
+        :param vals: array of bytes
+
+        :type vals: array
+
+        :returns: float
+        """
         if len(vals) < 4:
             return None
 
@@ -81,19 +128,26 @@ class OPC(object):
             return self._calculate_float(vals)
 
     def _calculate_bin_boundary(self, val):
-        '''
-            Returns the bin boundary value in micrometers.
-            Assumes a 12-bit ADC with 17.5 um Full-Scale.
+        """Calculates the bin boundary value in micrometers, assuming a 12-bit ADC with 17.5 um Full-Scale.
 
-            This is incorrect!
-        '''
+            **NOTE**: This is incorrect!
+
+            :param val: ADC Value
+
+            :type val: int
+
+            :returns: float
+        """
         fullscale   = 17.5    # micrometers
         adc         = 12
 
         return (val / (2**adc - 1)) * fullscale
 
     def read_info_string(self):
-        ''' returns the firmware information for the OPC as a string '''
+        """Reads the firmware information for the OPC
+
+        :returns: string
+        """
 
         infostring = []
         command = 0x3F
@@ -110,7 +164,10 @@ class OPC(object):
         return ''.join(infostring)
 
     def ping(self):
-        # returns the status of the OPC-N2 as a boolean (check_status)
+        """Checks the connection between the Raspberry Pi and the OPC
+
+        :returns: Boolean
+        """
         b = self.cnxn.xfer([0xCF])[0]           # send the command byte
 
         return True if b == 0xF3 else False
@@ -119,7 +176,17 @@ class OPC(object):
         return "Alphasense OPC-{}v{}".format(self.model, self.firmware)
 
 class OPCN2(OPC):
-    ''' Class instance for the Alphasene OPC-N2 '''
+    """Create an instance of the Alphasene OPC-N2. Currently supported by firmware
+    versions 14-17. opc.OPCN2 inherits from the opc.OPC parent class.
+
+    :param spi_connection: The spidev instance for the SPI connection.
+
+    :type spi_connection: spidev.SpiDev
+
+    :rtype: opc.OPCN2
+
+    :raises: FirmwareError
+    """
     def __init__(self, spi_connection, **kwargs):
         super(OPCN2, self).__init__(spi_connection, model = 'N2', **kwargs)
 
@@ -127,7 +194,10 @@ class OPCN2(OPC):
             raise FirmwareError("Current firmware version {0} is not supported.".format(self.firmware))
 
     def on(self):
-        ''' turns ON the OPC (fan and laser) '''
+        """Turn ON the OPC (fan and laser)
+
+        :returns: boolean success state
+        """
         b1 = self.cnxn.xfer([0x03])[0]          # send the command byte
         sleep(9e-3)                             # sleep for 9 ms
         b2, b3 = self.cnxn.xfer([0x00, 0x01])   # send the following two bytes
@@ -135,7 +205,10 @@ class OPCN2(OPC):
         return True if b1 == 0xF3 and b2 == 0x03 else False
 
     def off(self):
-        ''' turns OFF the OPC (fan and laser) '''
+        """Turn OFF the OPC (fan and laser)
+
+        :returns: boolean success state
+        """
         b1 = self.cnxn.xfer([0x03])[0]          # send the command byte
         sleep(9e-3)                             # sleep for 9 ms
         b2 = self.cnxn.xfer([0x01])[0]          # send the following two bytes
@@ -143,7 +216,10 @@ class OPCN2(OPC):
         return True if b1 == 0xF3 and b2 == 0x03 else False
 
     def read_config_variables(self):
-        ''' reads the configuration variables and returns them as a dictionary '''
+        """Read the configuration variables and returns them as a dictionary
+
+        :returns: dictionary
+        """
         config  = []
         data    = {}
         command = 0x3C
@@ -195,11 +271,22 @@ class OPCN2(OPC):
 
         return data
 
-    def write_config_variables(self):
-        ''' Writes the configuration variables to memory '''
+    def write_config_variables(self, config_vars):
+        """ Write configuration variables to non-volatile memory.
+
+        **NOTE: This method is currently a placeholder and is not implemented.**
+
+        :param config_vars: dictionary containing the configuration variables
+
+        :type config_vars: dictionary
+        """
         return
 
     def read_histogram(self):
+        """Read and reset the histogram.
+
+        :returns: dictionary
+        """
         resp = []
         data = {}
 
@@ -296,7 +383,11 @@ class OPCN2(OPC):
         return data
 
     def save_config_variables(self):
-        ''' Save the config variables in non-volatile memory '''
+        """Save the configuration variables in non-volatile memory. This method
+        should be used in conjuction with *write_config_variables*.
+
+        :returns: boolean success state
+        """
         command = 0x43
         byte_list = [0x3F, 0x3C, 0x3F, 0x3C, 0x43]
         success = [0xF3, 0x43, 0x3F, 0x3C, 0x3F, 0x3C]
@@ -317,13 +408,24 @@ class OPCN2(OPC):
         return True if resp == success else False
 
     def enter_bootloader_mode(self):
-        ''' Enter bootloader mode '''
+        """Enter bootloader mode. Must be issued prior to writing
+        configuration variables to non-volatile memory.
+
+        :returns: boolean success state
+        """
         command = 0x41
 
         return True if self.cnxn.xfer(command)[0] == 0xF3 else False
 
     def set_fan_power(self, value):
-        ''' Sets the fan power as a value between 0-255 '''
+        """Set only the Fan power.
+
+        :param value: Fan power value as an integer between 0-255.
+
+        :type value: int
+
+        :returns: boolean success state
+        """
         command = 0x42
 
         # Check to make sure the value is a single byte
@@ -341,7 +443,14 @@ class OPCN2(OPC):
         return True if a == 0xF3 and b == 0x42 and c == 0x00 else False
 
     def set_laser_power(self, value):
-        ''' Sets the laser power as a value between 0-255 '''
+        """Set the laser power only.
+
+        :param value: Laser power as a value between 0-255.
+
+        :type value: int
+
+        :returns: boolean success state
+        """
         command = 0x42
 
         # Check to make sure the value is a single byte
@@ -359,7 +468,10 @@ class OPCN2(OPC):
         return True if a == 0xF3 and b == 0x42 and c == 0x01 else False
 
     def laser_on(self):
-        ''' Turn on the laser only '''
+        """Turn the laser ON.
+
+        :returns: boolean success state
+        """
         command = 0x03
         byte    = 0x02
 
@@ -371,7 +483,10 @@ class OPCN2(OPC):
         return True if a == 0xF3 and b == 0x03 else False
 
     def laser_off(self):
-        ''' Turn off the laser only '''
+        """Turn the laser OFF
+
+        :returns: boolean success state
+        """
         command = 0x03
         byte    = 0x03
 
@@ -383,7 +498,10 @@ class OPCN2(OPC):
         return True if a == 0xF3 and b == 0x03 else False
 
     def fan_on(self):
-        ''' Turn on the fan only '''
+        """Turn the fan ON.
+
+        :returns: boolean success state
+        """
         command = 0x03
         byte    = 0x04
 
@@ -395,7 +513,10 @@ class OPCN2(OPC):
         return True if a == 0xF3 and b == 0x03 else False
 
     def fan_off(self):
-        ''' Turn off the fan only '''
+        """Turn the fan OFF.
+
+        :returns: boolean success state
+        """
         command = 0x03
         byte    = 0x05
 
@@ -407,26 +528,45 @@ class OPCN2(OPC):
         return True if a == 0xF3 and b == 0x03 else False
 
 class OPCN1(OPC):
-    ''' Class instance for the Alphasense OPC-N1 '''
+    """Create an instance of the Alphasene OPC-N1. opc.OPCN1 inherits from
+    the opc.OPC parent class.
+
+    :param spi_connection: The spidev instance for the SPI connection.
+
+    :type spi_connection: spidev.SpiDev
+
+    :rtype: opc.OPCN1
+
+    :raises: FirmwareError
+    """
     def __init(self, spi_connection, **kwargs):
         super(OPCN1, self).__init__(spi_connection, model = 'N1', **kwargs)
 
     def on(self):
-        # turns ON the OPC (fan and laser)
+        """Turn ON the OPC (fan and laser)
+
+        :returns: boolean success state
+        """
         b1 = self.cnxn.xfer([0x0C])[0]          # send the command byte
         sleep(9e-3)                             # sleep for 9 ms
 
         return True if b1 == 0xF3 else False
 
     def off(self):
-        # turns OFF the OPC (fan and laser)
+        """Turn OFF the OPC (fan and laser)
+
+        :returns: boolean success state
+        """
         b1 = self.cnxn.xfer([0x03])[0]          # send the command byte
         sleep(9e-3)                             # sleep for 9 ms
 
         return True if b1 == 0xF3 else False
 
     def read_gsc_sfr(self):
-        ''' Read the gain-scaling-coefficient and sample flow rate '''
+        """Read the gain-scaling-coefficient and sample flow rate.
+
+        :returns: dictionary containing GSC and SFR
+        """
         config  = []
         data    = {}
 
@@ -445,7 +585,10 @@ class OPCN1(OPC):
         return data
 
     def read_bin_boundaries(self):
-        ''' Return the bin boundaries '''
+        """Return the bin boundaries.
+
+        :returns: dictionary with 17 bin boundaries.
+        """
         config  = []
         data    = {}
 
@@ -465,11 +608,17 @@ class OPCN1(OPC):
         return data
 
     def write_gsc_sfr(self):
-        ''' Write the gsc and sfr values '''
+        """Write the gsc and sfr values
+
+        **NOTE**: This method is currently a placeholder.
+        """
         return
 
     def read_bin_particle_density(self):
-        ''' Read the bin particle density '''
+        """Read the bin particle density
+
+        :returns: float
+        """
         config = []
 
         # Send the command byte and sleep for 10 ms
@@ -486,11 +635,22 @@ class OPCN1(OPC):
         return bpd
 
     def write_bin_particle_density(self):
-        ''' Write the bin particle density '''
+        """Write the bin particle density values to memory. This method is currently a
+        placeholder.
+
+        :returns: None
+        """
         return
 
     def read_histogram(self):
-        ''' Read histogram and reset '''
+        """Read and reset the histogram. The expected return is a dictionary
+        containing the counts per bin, MToF for bins 1, 3, 5, and 7, temperature,
+        pressure, the sampling period, the checksum, PM1, PM2.5, and PM10.
+
+        **NOTE:** The sampling period for the OPCN1 seems to be incorrect.
+
+        :returns: dictionary
+        """
         resp = []
         data = {}
 

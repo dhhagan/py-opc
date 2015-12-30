@@ -23,11 +23,6 @@ Upgrade to the newest version:
 
     >>> pip install -U py-opc
 
-## git (development)
-
-  1. `>>> git clone https://github.com/dhhagan/py-opc.git`
-  2. `>>> cd py-opc/`
-  3. `>>> sudo python3 setup.py install`
 
 ## License
 

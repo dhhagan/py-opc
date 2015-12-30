@@ -40,23 +40,23 @@ class SetupTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-
     def setUp(self):
         self.spi = spidev.SpiDev()
         self.spi.open(0, 0)
         self.spi.mode = 1
         self.spi.max_speed_hz = 500000
 
-        self.alpha = OPCN2(self.spi)
+        self.alpha = OPCN2(self.spi, debug = True)
         #self.assertRaises(SPIError, OPCN2, None)
 
     def tearDown(self):
         pass
-    '''
+
     def test_spi(self):
         sleep(interval)
         self.assertIsInstance(self.spi, spidev.SpiDev)
 
+    '''
     def test_firmware(self):
         sleep(interval)
         self.assertTrue(self.alpha.firmware in [14, 15, 16, 17])

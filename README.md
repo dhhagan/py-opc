@@ -30,7 +30,7 @@ Upgrade to the newest version:
 
 ## Documentation
 
-  Full documentation can be found [here](http://dhhagan.github.io/py-opc/).
+  Full documentation can be found [here](http://py-opc.readthedocs.org/en/latest/).
 
 
 ## Sample Script / Getting Started

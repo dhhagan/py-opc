@@ -1,8 +1,9 @@
 import unittest
-import spidev
+import mock
 from time import sleep
 from opc import OPCN2
 from opc.exceptions import SPIError, FirmwareError
+import spidev
 
 interval = 1
 
@@ -38,8 +39,8 @@ class SetupTestCase(unittest.TestCase):
 
     def tearDown(self):
         pass
-        
-    '''
+
+
     def setUp(self):
         self.spi = spidev.SpiDev()
         self.spi.open(0, 0)
@@ -51,7 +52,7 @@ class SetupTestCase(unittest.TestCase):
 
     def tearDown(self):
         pass
-
+    '''
     def test_spi(self):
         sleep(interval)
         self.assertIsInstance(self.spi, spidev.SpiDev)

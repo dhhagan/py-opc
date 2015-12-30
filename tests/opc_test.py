@@ -51,12 +51,12 @@ class SetupTestCase(unittest.TestCase):
 
     def tearDown(self):
         pass
-
+        
+    '''
     def test_spi(self):
         sleep(interval)
         self.assertIsInstance(self.spi, spidev.SpiDev)
 
-    '''
     def test_firmware(self):
         sleep(interval)
         self.assertTrue(self.alpha.firmware in [14, 15, 16, 17])

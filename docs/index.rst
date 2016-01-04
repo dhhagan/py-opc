@@ -48,12 +48,12 @@ are stated below:
 =====  ====================  ===== ==========
  Pin   Function              OPC   RPi
 =====  ====================  ===== ==========
-1      Ground                GND    -
-2      Chip Select           /SS   CE0 or CE1
-3      Master Out Slave In   SDI   MOSI
-4      Clock                 SCK   CLK
-5      Master In Slave Out   SDO   MISO
-6      Power                 VCC    -
+1      5 VDC                 VCC    -
+2      Serial Clock          SCK   CLK
+3      Master In Slave Out   SDO   MISO
+4      Master Out Slave In   SDI   MOSI
+5      Chip Select           /SS   CE0 or CE1
+6      Ground                GND    -
 =====  ====================  ===== ==========
 
 .. _RPi: https://www.raspberrypi.org/documentation/hardware/raspberrypi/spi/

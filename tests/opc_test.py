@@ -51,7 +51,7 @@ class SetupTestCase(unittest.TestCase):
 
     def tearDown(self):
         pass
-        
+
     '''
     def test_spi(self):
         sleep(interval)

@@ -21,7 +21,7 @@ Install the py-opc package through PyPi:
 
 Upgrade to the newest version:
 
-    >>> pip install -U py-opc
+    >>> pip install py-opc --upgrade
 
 
 ## License

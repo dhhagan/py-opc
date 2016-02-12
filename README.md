@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/dhhagan/py-opc.svg?branch=develop)](https://travis-ci.org/dhhagan/py-opc)
 [![Coverage Status](https://coveralls.io/repos/dhhagan/py-opc/badge.svg?branch=master&service=github)](https://coveralls.io/github/dhhagan/py-opc?branch=master)
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.45949.svg)](http://dx.doi.org/10.5281/zenodo.45949)
 
 # py-opc
 

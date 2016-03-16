@@ -5,7 +5,7 @@
     Written originally by David H Hagan
 '''
 
-__version__ = '0.3.1'
+__version__ = '0.4.0'
 
 try:
     from setuptools import setup

@@ -1,5 +1,5 @@
 from pkg_resources import get_distribution
-from .exceptions import SPIError, FirmwareError
+from .exceptions import SPIError, FirmwareError, FirmwareVersionError
 
 from time import sleep
 import spidev
@@ -190,8 +190,8 @@ class OPCN2(OPC):
     def __init__(self, spi_connection, **kwargs):
         super(OPCN2, self).__init__(spi_connection, model = 'N2', **kwargs)
 
-        if self.firmware not in [14, 15, 16, 17]:
-            raise FirmwareError("Current firmware version {0} is not supported.".format(self.firmware))
+        if self.firmware not in [14, 15, 16, 17, 18]:
+            raise FirmwareVersionError("Firmware version {0} is not supported.".format(self.firmware))
 
     def on(self):
         """Turn ON the OPC (fan and laser)
@@ -200,7 +200,7 @@ class OPCN2(OPC):
         """
         b1 = self.cnxn.xfer([0x03])[0]          # send the command byte
         sleep(9e-3)                             # sleep for 9 ms
-        b2, b3 = self.cnxn.xfer([0x00, 0x01])   # send the following two bytes
+        b2 = self.cnxn.xfer([0x00])             # send the following byte
 
         return True if b1 == 0xF3 and b2 == 0x03 else False
 

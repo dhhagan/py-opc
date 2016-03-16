@@ -14,3 +14,9 @@ class FirmwareError(Exception):
       2. Your firmware version cannot be detected (usually due to a bad connection)
     """
     pass
+
+class FirmwareVersionError(Exception):
+    """Raised if the firmware version of your OPC is not supported with this
+    version of the py-opc module. Please check the GitHub repository for updates.
+    """
+    pass

@@ -3,8 +3,7 @@
 """
 
 from pkg_resources import get_distribution
-from .exceptions import SPIError, FirmwareError, FirmwareVersionError \
-                        SpiConnectionError
+from .exceptions import SPIError, FirmwareError, FirmwareVersionError, SpiConnectionError
 
 from time import sleep
 import spidev

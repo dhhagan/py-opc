@@ -7,6 +7,11 @@ class SPIError(Exception):
     """
     pass
 
+class SpiConnectionError(Exception):
+    """
+    """
+    pass
+
 class FirmwareError(Exception):
     """Raised under two circumstances:
 

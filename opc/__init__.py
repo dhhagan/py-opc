@@ -42,7 +42,8 @@ class OPC(object):
 
         # Set the firmware version upon initialization
         try:
-            self.firmware['version'] = int(re.findall("\d{3}", self.read_info_string())[-1])
+            self.firmware['version']    = int(re.findall("\d{3}", self.read_info_string())[-1])
+            self.firmware['major']      = self.firmware['version']
         except:
             # Try again for the early (v7) firmwares
             try:
@@ -286,6 +287,9 @@ class OPCN2(OPC):
         config  = []
         data    = {}
 
+        if self.firmware['version'] < 18:
+            raise FirmwareVersionError("Your firmware does not support this method.")
+
         # Send the command byte and sleep for 10 ms
         self.cnxn.xfer([0x3D])
         sleep(10e-3)
@@ -369,7 +373,7 @@ class OPCN2(OPC):
         data['Bin7 MToF']       = self._calculate_mtof(resp[35])
 
         # Bins associated with firmware versions 14 and 15(?)
-        if self.firmware < 16:
+        if self.firmware['version'] < 16.:
             data['Temperature']     = self._calculate_temp(resp[36:40])
             data['Pressure']        = self._calculate_pressure(resp[40:44])
             data['Sampling Period'] = self._calculate_period(resp[44:48])

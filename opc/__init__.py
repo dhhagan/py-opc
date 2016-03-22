@@ -206,7 +206,7 @@ class OPCN2(OPC):
         """
         b1 = self.cnxn.xfer([0x03])[0]          # send the command byte
         sleep(9e-3)                             # sleep for 9 ms
-        b2 = self.cnxn.xfer([0x00])             # send the following byte
+        b2, b3 = self.cnxn.xfer([0x00, 0x01])   # send the following byte
 
         return True if b1 == 0xF3 and b2 == 0x03 else False
 
@@ -295,11 +295,11 @@ class OPCN2(OPC):
             resp = self.cnxn.xfer([0x00])[0]
             config.append(resp)
 
-        data["AMSamplingInterval"]      = self._16bit_unsigned(config[0:2])
-        data["AMIdleIntervalCount"]     = self._16bit_unsigned(config[2:4])
+        data["AMSamplingInterval"]      = self._16bit_unsigned(config[0], config[1])
+        data["AMIdleIntervalCount"]     = self._16bit_unsigned(config[2], config[3])
         data['AMFanOnIdle']             = config[4]
         data['AMLaserOnIdle']           = config[5]
-        data['AMMaxDataArraysInFile']   = self._16bit_unsigned(config[6:8])
+        data['AMMaxDataArraysInFile']   = self._16bit_unsigned(config[6], config[7])
         data['AMOnlySavePMData']        = config[8]
 
         return data
@@ -560,7 +560,7 @@ class OPCN2(OPC):
         """
 
         # Check to make sure that v18+ is true
-        if self.firmware < 18:
+        if self.firmware['version'] < 18.:
             raise FirmwareVersionError("This method is not supported by your OPC-N2 firmware version.")
 
         # Send the command byte and wait 10 ms
@@ -587,7 +587,7 @@ class OPCN2(OPC):
         :returns: string
         """
 
-        if self.firmware < 18:
+        if self.firmware['version'] < 18.:
             raise FirmwareVersionError("This method is not supported by your firmware.")
 
         string = []
@@ -613,7 +613,7 @@ class OPCN2(OPC):
         :type sn: string
         """
 
-        if self.firmware < 18:
+        if self.firmware < 18.:
             raise FirmwareVersionError("Your firmware does not support this method.")
 
         return

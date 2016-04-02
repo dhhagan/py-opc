@@ -203,7 +203,7 @@ class OPCN2(OPC):
         firmware_min = 14.   # Minimum firmware version supported
         firmware_max = 18.   # Maximum firmware version supported
 
-        if self.firmware['version'] < firmware_min or self.firmware['version'] > firmware_max:
+        if self.firmware['major'] < firmware_min or self.firmware['major'] > firmware_max:
             raise FirmwareVersionError("Your firmware is not yet supported.")
 
     def on(self):

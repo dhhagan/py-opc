@@ -44,24 +44,22 @@ class OPC(object):
 
         # Set the firmware version upon initialization
         try:
-            try:
-                self.firmware['version']    = int(re.findall("\d{3}", self.read_info_string())[-1])
-            except:
-                try:
-                    self.firmware['major']      = self.firmware['version']
-                except:
-                    print ("Couldn't update major version..")
+            self.firmware['version']    = int(re.findall("\d{3}", self.read_info_string())[-1])
+            self.firmware['major']      = self.firmware['version']
         except:
-            print ("Must be lower firmware version?")
             # Try again for the early (v7) firmwares
             try:
-                tmp = int(re.findall("\d{1}", self.read_info_string())[-1])
-                if tmp != 0:
-                    self.firmware['version'] = tmp
-                else:
-                    raise FirmwareVersionError("Cannot determine correct firmware for this OPC: {}".format(self.read_info_string()))
+                self.firmware['version'] = int(re.findall("\d{1}", self.read_info_string())[-1])
             except:
                 raise FirmwareVersionError("Cannot determine correct firmware for this OPC: {}".format(self.read_info_string()))
+
+        # If firmware version is >= 18, set the major and minor versions..
+        try:
+            self.firmware['major'] = self.firmware['version']
+            if self.firmware['version'] >= 18:
+                self.firmware['minor'] = 2
+        except:
+            pass
 
     def _16bit_unsigned(self, LSB, MSB):
         """Returns the combined LSB and MSB
@@ -645,7 +643,7 @@ class OPCN2(OPC):
         self.firmware['minor'] = self.cnxn.xfer([0x00])[0]
 
         # Build the firmware version
-        self.firmware['version'] = float('{}.{}'.format(self.firmware['major'], self.firmare['minor']))
+        self.firmware['version'] = float('{}.{}'.format(self.firmware['major'], self.firmware['minor']))
 
         return self.firmware
 

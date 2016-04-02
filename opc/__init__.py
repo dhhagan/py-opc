@@ -4,6 +4,7 @@
 
 from pkg_resources import get_distribution
 from .exceptions import SPIError, FirmwareError, FirmwareVersionError, SpiConnectionError
+from .decorators import requires_firmware
 
 from time import sleep
 import spidev
@@ -45,7 +46,6 @@ class OPC(object):
         # Set the firmware version upon initialization
         try:
             self.firmware['version']    = int(re.findall("\d{3}", self.read_info_string())[-1])
-            self.firmware['major']      = self.firmware['version']
         except:
             # Try again for the early (v7) firmwares
             try:
@@ -55,9 +55,10 @@ class OPC(object):
 
         # If firmware version is >= 18, set the major and minor versions..
         try:
-            self.firmware['major'] = self.firmware['version']
-            if self.firmware['version'] >= 18:
-                self.firmware['minor'] = 2
+            if self.firmware['version'] >= 18.:
+                self.read_firmware()
+            else:
+                self.firmware['major'] = self.firmware['version']
         except:
             pass
 
@@ -282,6 +283,7 @@ class OPCN2(OPC):
 
         return data
 
+    @requires_firmware(18.)
     def config2(self):
         """Read the second set of configuration variables and return as a dictionary.
 
@@ -292,8 +294,8 @@ class OPCN2(OPC):
         config  = []
         data    = {}
 
-        if self.firmware['version'] < 18:
-            raise FirmwareVersionError("Your firmware does not support this method.")
+        #if self.firmware['version'] < 18:
+        #    raise FirmwareVersionError("Your firmware does not support this method.")
 
         # Send the command byte and sleep for 10 ms
         self.cnxn.xfer([0x3D])

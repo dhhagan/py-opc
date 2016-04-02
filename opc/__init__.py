@@ -1,9 +1,5 @@
-"""Things to add:
-    1. Decorator to check for proper firmware version / 2016-03-20
-"""
-
 from pkg_resources import get_distribution
-from .exceptions import SPIError, FirmwareError, FirmwareVersionError, SpiConnectionError
+from .exceptions import FirmwareVersionError, SpiConnectionError
 from .decorators import requires_firmware
 
 from time import sleep
@@ -25,13 +21,25 @@ class OPC(object):
     :param debug: Set true to print data to console while running
     :param model: Model number of the OPC ('N1' or 'N2') set by the parent class
 
-    :raises: SPIError
+    :raises: opc.exceptions.SpiConnectionError
 
     :type spi_connection: spidev.SpiDev
     :type debug: boolean
     :type model: string
 
     :rtype: opc.OPC
+
+    :Example:
+
+     >>> import opc
+     >>> import spidev
+     >>>
+     >>> spi = spidev.SpiDev()
+     >>> spi.open(0, 0)
+     >>> spi.mode = 1
+     >>> spi.max_speed_hz = 500000
+     >>>
+     >>> alpha = opc.OPC(spi)
     """
     def __init__(self, spi_connection, **kwargs):
         self.cnxn       = spi_connection
@@ -51,7 +59,12 @@ class OPC(object):
             try:
                 self.firmware['version'] = int(re.findall("\d{1}", self.read_info_string())[-1])
             except:
-                raise FirmwareVersionError("Cannot determine correct firmware for this OPC: {}".format(self.read_info_string()))
+                msg =   """
+                        Your firmware version could not be automatically detected. This is usually caused
+                        by a bad wiring or poor power supply. If niether of these are likely candidates, please
+                        open an issue on the GitHub repository at https://github.com/dhhagan/py-opc/issues/new
+                        """
+                raise FirmwareVersionError(msg)
 
         # If firmware version is >= 18, set the major and minor versions..
         try:
@@ -71,7 +84,7 @@ class OPC(object):
         :type LSB: byte
         :type MSB: byte
 
-        :returns: 16-bit unsigned int
+        :rtype: 16-bit unsigned int
         """
         return (MSB << 8) | LSB
 
@@ -82,7 +95,7 @@ class OPC(object):
 
         :type byte_array: array
 
-        :returns: float
+        :rtype: float
         """
         if len(byte_array) != 4:
             return None
@@ -97,7 +110,7 @@ class OPC(object):
 
         :type mtof: float
 
-        :returns: float
+        :rtype: float
         """
         return mtof / 3.0
 
@@ -108,7 +121,7 @@ class OPC(object):
 
         :type vals: array
 
-        :returns: float
+        :rtype: float
         """
         if len(vals) < 4:
             return None
@@ -122,7 +135,7 @@ class OPC(object):
 
         :type vals: array
 
-        :returns: float
+        :rtype: float
         """
         if len(vals) < 4:
             return None
@@ -148,7 +161,7 @@ class OPC(object):
 
             :type val: int
 
-            :returns: float
+            :rtype: float
         """
         fullscale   = 17.5    # micrometers
         adc         = 12
@@ -158,7 +171,12 @@ class OPC(object):
     def read_info_string(self):
         """Reads the information string for the OPC
 
-        :returns: string
+        :rtype: string
+
+        :Example:
+
+        >>> alpha.read_info_string()
+        'OPC-N2 FirmwareVer=OPC-018.2....................BD'
         """
         infostring = []
 
@@ -176,7 +194,7 @@ class OPC(object):
     def ping(self):
         """Checks the connection between the Raspberry Pi and the OPC
 
-        :returns: Boolean
+        :rtype: Boolean
         """
         b = self.cnxn.xfer([0xCF])[0]           # send the command byte
 
@@ -195,7 +213,13 @@ class OPCN2(OPC):
 
     :rtype: opc.OPCN2
 
-    :raises: FirmwareVersionError
+    :raises: opc.exceptions.FirmwareVersionError
+
+    :Example:
+
+    >>> alpha = opc.OPCN2(spi)
+    >>> alpha
+    Alphasense OPC-N2v18.2
     """
     def __init__(self, spi_connection, **kwargs):
         super(OPCN2, self).__init__(spi_connection, model = 'N2', **kwargs)
@@ -204,12 +228,17 @@ class OPCN2(OPC):
         firmware_max = 18.   # Maximum firmware version supported
 
         if self.firmware['major'] < firmware_min or self.firmware['major'] > firmware_max:
-            raise FirmwareVersionError("Your firmware is not yet supported.")
+            raise FirmwareVersionError("Your firmware is not yet supported. Only versions 14-18 are currently supported.")
 
     def on(self):
         """Turn ON the OPC (fan and laser)
 
-        :returns: boolean success state
+        :rtype: boolean
+
+        :Example:
+
+        >>> alpha.on()
+        True
         """
         b1 = self.cnxn.xfer([0x03])[0]          # send the command byte
         sleep(9e-3)                             # sleep for 9 ms
@@ -220,7 +249,12 @@ class OPCN2(OPC):
     def off(self):
         """Turn OFF the OPC (fan and laser)
 
-        :returns: boolean success state
+        :rtype: boolean
+
+        :Example:
+
+        >>> alpha.off()
+        True
         """
         b1 = self.cnxn.xfer([0x03])[0]          # send the command byte
         sleep(9e-3)                             # sleep for 9 ms
@@ -231,7 +265,21 @@ class OPCN2(OPC):
     def config(self):
         """Read the configuration variables and returns them as a dictionary
 
-        :returns: dictionary
+        :rtype: dictionary
+
+        :Example:
+
+        >>> alpha.config()
+        {
+            'BPD 13': 1.6499,
+            'BPD 12': 1.6499,
+            'BPD 11': 1.6499,
+            'BPD 10': 1.6499,
+            'BPD 15': 1.6499,
+            'BPD 14': 1.6499,
+            'BSVW 15': 1.0,
+            ...
+        }
         """
         config  = []
         data    = {}
@@ -289,7 +337,19 @@ class OPCN2(OPC):
 
         **NOTE: This method is supported by firmware v18+.**
 
-        :returns: dictionary
+        :rtype: dictionary
+
+        :Example:
+
+        >>> a.config2()
+        {
+            'AMFanOnIdle': 0,
+            'AMIdleIntervalCount': 0,
+            'AMMaxDataArraysInFile': 61798,
+            'AMSamplingInterval': 1,
+            'AMOnlySavePMData': 0,
+            'AMLaserOnIdle': 0
+        }
         """
         config  = []
         data    = {}
@@ -323,7 +383,7 @@ class OPCN2(OPC):
         """
         return
 
-    @requires_firmware(19.)
+    @requires_firmware(18.)
     def write_config_variables2(self, config_vars):
         """ Write configuration variables 2 to non-volatile memory.
 
@@ -339,7 +399,30 @@ class OPCN2(OPC):
     def histogram(self):
         """Read and reset the histogram.
 
-        :returns: dictionary
+        :rtype: dictionary
+
+        :Example:
+
+        >>> alpha.histogram()
+        {
+            'Temperature': None,
+            'Pressure': None,
+            'Bin 0': 0,
+            'Bin 1': 0,
+            'Bin 2': 0,
+            ...
+            'Bin 15': 0,
+            'SFR': 3.700,
+            'Bin1MToF': 0,
+            'Bin3MToF': 0,
+            'Bin5MToF': 0,
+            'Bin7MToF': 0,
+            'PM1': 0.0,
+            'PM2.5': 0.0,
+            'PM10': 0.0,
+            'Sampling Period': 2.345,
+            'Checksum': 0
+        }
         """
         resp = []
         data = {}
@@ -437,7 +520,12 @@ class OPCN2(OPC):
         """Save the configuration variables in non-volatile memory. This method
         should be used in conjuction with *write_config_variables*.
 
-        :returns: boolean success state
+        :rtype: boolean
+
+        :Example:
+
+        >>> alpha.save_config_variables()
+        True
         """
         command = 0x43
         byte_list = [0x3F, 0x3C, 0x3F, 0x3C, 0x43]
@@ -462,7 +550,12 @@ class OPCN2(OPC):
         """Enter bootloader mode. Must be issued prior to writing
         configuration variables to non-volatile memory.
 
-        :returns: boolean success state
+        :rtype: boolean
+
+        :Example:
+
+        >>> alpha._enter_bootloader_mode()
+        True
         """
 
         return True if self.cnxn.xfer(0x41)[0] == 0xF3 else False
@@ -474,7 +567,12 @@ class OPCN2(OPC):
 
         :type power: int
 
-        :returns: boolean success state
+        :rtype: boolean
+
+        :Example:
+
+        >>> alpha.set_fan_power(255)
+        True
         """
         # Check to make sure the value is a single byte
         if value > 255:
@@ -497,7 +595,12 @@ class OPCN2(OPC):
 
         :type power: int
 
-        :returns: boolean success state
+        :rtype: boolean
+
+        :Example:
+
+        >>> alpha.set_laser_power(230)
+        True
         """
 
         # Check to make sure the value is a single byte
@@ -521,7 +624,12 @@ class OPCN2(OPC):
 
         :type state: boolean
 
-        :returns: boolean success status
+        :rtype: boolean
+
+        :Example:
+
+        >>> alpha.toggle_laser(True)
+        True
         """
 
         # Send the command byte and wait 10 ms
@@ -544,7 +652,12 @@ class OPCN2(OPC):
 
         :type state: boolean
 
-        :returns: boolean success status
+        :rtype: boolean
+
+        :Example:
+
+        >>> alpha.toggle_fan(False)
+        True
         """
 
         # Send the command byte and wait 10 ms
@@ -560,18 +673,24 @@ class OPCN2(OPC):
 
         return True if a == 0xF3 and b == 0x03 else False
 
+    @requires_firmware(18.)
     def read_pot_status(self):
         """Read the status of the digital pot. Firmware v18+ only.
         The return value is a dictionary containing the following as
         unsigned 8-bit integers: FanON, LaserON, FanDACVal, LaserDACVal.
 
-        :returns: dict
+        :rtype: dict
+
+        :Example:
+
+        >>> alpha.read_pot_status()
+        {
+            'LaserDACVal': 230,
+            'FanDACVal': 255,
+            'FanON': 0,
+            'LaserON': 0
+        }
         """
-
-        # Check to make sure that v18+ is true
-        if self.firmware['version'] < 18.:
-            raise FirmwareVersionError("This method is not supported by your OPC-N2 firmware version.")
-
         # Send the command byte and wait 10 ms
         a = self.cnxn.xfer([0x13])[0]
 
@@ -589,16 +708,18 @@ class OPCN2(OPC):
             'LaserDACVal':  res[3]
             }
 
+    @requires_firmware(18.)
     def sn(self):
         """Read the Serial Number string. This method is only available on OPC-N2
         firmware versions 18+.
 
-        :returns: string
+        :rtype: string
+
+        :Example:
+
+        >>> alpha.sn()
+        'OPC-N2 123456789'
         """
-
-        if self.firmware['version'] < 18.:
-            raise FirmwareVersionError("This method is not supported by your firmware.")
-
         string = []
 
         # Send the command byte and sleep for 9 ms
@@ -612,6 +733,7 @@ class OPCN2(OPC):
 
         return ''.join(string)
 
+    @requires_firmware(18.)
     def write_sn(self):
         """Write the Serial Number string. This method is available for Firmware versions 18+.
 
@@ -622,19 +744,23 @@ class OPCN2(OPC):
         :type sn: string
         """
 
-        if self.firmware < 18.:
-            raise FirmwareVersionError("Your firmware does not support this method.")
-
         return
 
+    @requires_firmware(18.)
     def read_firmware(self):
         """Read the firmware version of the OPC-N2. Firmware v18+ only.
 
-        :returns: dict
-        """
-        if self.firmware['version'] < 18.:
-            raise FirmwareVersionError("Your firmware does not support this method.")
+        :rtype: dict
 
+        :Example:
+
+        >>> alpha.read_firmware()
+        {
+            'major': 18,
+            'minor': 2,
+            'version': 18.2
+        }
+        """
         # Send the command byte and sleep for 9 ms
         self.cnxn.xfer([0x12])
         sleep(10e-3)
@@ -647,15 +773,23 @@ class OPCN2(OPC):
 
         return self.firmware
 
+    @requires_firmware(18.)
     def pm(self):
         """Read the PM data and reset the histogram
 
         **NOTE: This method is supported by firmware v18+.**
 
-        :returns: dictionary
+        :rtype: dictionary
+
+        :Example:
+
+        >>> alpha.pm()
+        {
+            'PM1': 0.12,
+            'PM2.5': 0.24,
+            'PM10': 1.42
+        }
         """
-        if self.firmware['major'] < 18:
-            raise FirmwareVersionError("This method is not supported by your firmware")
 
         resp = []
         data = {}
@@ -688,7 +822,7 @@ class OPCN1(OPC):
 
     :rtype: opc.OPCN1
 
-    :raises: FirmwareError
+    :raises: FirmwareVersionError
     """
     def __init(self, spi_connection, **kwargs):
         super(OPCN1, self).__init__(spi_connection, model = 'N1', **kwargs)

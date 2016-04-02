@@ -8,7 +8,7 @@ class SPIError(Exception):
     pass
 
 class SpiConnectionError(Exception):
-    """
+    """Raised when the argument sent to opc.OPCN2() is not a valid spidev.SpiDev instance.
     """
     pass
 
@@ -25,3 +25,5 @@ class FirmwareVersionError(Exception):
     version of the py-opc module. Please check the GitHub repository for updates.
     """
     pass
+
+firmware_error_msg = """This is the incorrect firmware version."""

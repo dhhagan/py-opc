@@ -11,6 +11,8 @@ import struct
 import warnings
 import re
 
+from .exceptions import firmware_error_msg
+
 __all__ = ['OPCN2', 'OPCN1']
 __version__ = get_distribution('py-opc').version
 
@@ -42,9 +44,15 @@ class OPC(object):
 
         # Set the firmware version upon initialization
         try:
-            self.firmware['version']    = int(re.findall("\d{3}", self.read_info_string())[-1])
-            self.firmware['major']      = self.firmware['version']
+            try:
+                self.firmware['version']    = int(re.findall("\d{3}", self.read_info_string())[-1])
+            except:
+                try:
+                    self.firmware['major']      = self.firmware['version']
+                except:
+                    print ("Couldn't update major version..")
         except:
+            print ("Must be lower firmware version?")
             # Try again for the early (v7) firmwares
             try:
                 tmp = int(re.findall("\d{1}", self.read_info_string())[-1])
@@ -153,7 +161,6 @@ class OPC(object):
 
         :returns: string
         """
-
         infostring = []
 
         # Send the command byte and sleep for 9 ms

@@ -54,7 +54,7 @@ Upgrade to the newest version:
     print (alphasense.read_info_string())
 
     # Read the histogram
-    print (alphasense.read_histogram())
+    print (alphasense.histogram())
 
     # Turn the opc OFF
     alphasense.off()

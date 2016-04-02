@@ -1,11 +1,18 @@
+"""Things to add:
+    1. Decorator to check for proper firmware version / 2016-03-20
+"""
+
 from pkg_resources import get_distribution
-from .exceptions import SPIError, FirmwareError
+from .exceptions import SPIError, FirmwareError, FirmwareVersionError, SpiConnectionError
+from .decorators import requires_firmware
 
 from time import sleep
 import spidev
 import struct
 import warnings
 import re
+
+from .exceptions import firmware_error_msg
 
 __all__ = ['OPCN2', 'OPCN1']
 __version__ = get_distribution('py-opc').version
@@ -29,28 +36,33 @@ class OPC(object):
     def __init__(self, spi_connection, **kwargs):
         self.cnxn       = spi_connection
         self.debug      = kwargs.get('debug', False)
-        self.firmware   = None
+        self.firmware   = {'major': None, 'minor': None, 'version': None}
         self.model      = kwargs.get('model', 'N2')
 
         # Check to make sure the connection is a valid SpiDev instance
         if not isinstance(spi_connection, spidev.SpiDev):
-            raise SPIError("This is not an instance of SpiDev.")
+            raise SpiConnectionError("This is not an instance of SpiDev.")
 
         # Set the firmware version upon initialization
         try:
-            self.firmware = int(re.findall("\d{3}", self.read_info_string())[-1])
+            self.firmware['version']    = int(re.findall("\d{3}", self.read_info_string())[-1])
         except:
             # Try again for the early (v7) firmwares
             try:
-                tmp = int(re.findall("\d{1}", self.read_info_string())[-1])
-                if tmp != 0:
-                    self.firmware = tmp
-                else:
-                    raise FirmwareError("Cannot determine correct firmware for this OPC: {}".format(self.read_info_string()))
+                self.firmware['version'] = int(re.findall("\d{1}", self.read_info_string())[-1])
             except:
-                raise FirmwareError("Cannot determine correct firmware for this OPC: {}".format(self.read_info_string()))
+                raise FirmwareVersionError("Cannot determine correct firmware for this OPC: {}".format(self.read_info_string()))
 
-    def _combine_bytes(self, LSB, MSB):
+        # If firmware version is >= 18, set the major and minor versions..
+        try:
+            if self.firmware['version'] >= 18.:
+                self.read_firmware()
+            else:
+                self.firmware['major'] = self.firmware['version']
+        except:
+            pass
+
+    def _16bit_unsigned(self, LSB, MSB):
         """Returns the combined LSB and MSB
 
         :param LSB: Least Significant Byte
@@ -144,16 +156,14 @@ class OPC(object):
         return (val / (2**adc - 1)) * fullscale
 
     def read_info_string(self):
-        """Reads the firmware information for the OPC
+        """Reads the information string for the OPC
 
         :returns: string
         """
-
         infostring = []
-        command = 0x3F
 
         # Send the command byte and sleep for 9 ms
-        self.cnxn.xfer([command])
+        self.cnxn.xfer([0x3F])
         sleep(9e-3)
 
         # Read the info string by sending 60 empty bytes
@@ -173,11 +183,11 @@ class OPC(object):
         return True if b == 0xF3 else False
 
     def __repr__(self):
-        return "Alphasense OPC-{}v{}".format(self.model, self.firmware)
+        return "Alphasense OPC-{}v{}".format(self.model, self.firmware['version'])
 
 class OPCN2(OPC):
     """Create an instance of the Alphasene OPC-N2. Currently supported by firmware
-    versions 14-17. opc.OPCN2 inherits from the opc.OPC parent class.
+    versions 14-18. opc.OPCN2 inherits from the opc.OPC parent class.
 
     :param spi_connection: The spidev instance for the SPI connection.
 
@@ -185,13 +195,16 @@ class OPCN2(OPC):
 
     :rtype: opc.OPCN2
 
-    :raises: FirmwareError
+    :raises: FirmwareVersionError
     """
     def __init__(self, spi_connection, **kwargs):
         super(OPCN2, self).__init__(spi_connection, model = 'N2', **kwargs)
 
-        if self.firmware not in [14, 15, 16, 17]:
-            raise FirmwareError("Current firmware version {0} is not supported.".format(self.firmware))
+        firmware_min = 14.   # Minimum firmware version supported
+        firmware_max = 18.   # Maximum firmware version supported
+
+        if self.firmware['major'] < firmware_min or self.firmware['major'] > firmware_max:
+            raise FirmwareVersionError("Your firmware is not yet supported.")
 
     def on(self):
         """Turn ON the OPC (fan and laser)
@@ -200,7 +213,7 @@ class OPCN2(OPC):
         """
         b1 = self.cnxn.xfer([0x03])[0]          # send the command byte
         sleep(9e-3)                             # sleep for 9 ms
-        b2, b3 = self.cnxn.xfer([0x00, 0x01])   # send the following two bytes
+        b2, b3 = self.cnxn.xfer([0x00, 0x01])   # send the following byte
 
         return True if b1 == 0xF3 and b2 == 0x03 else False
 
@@ -215,17 +228,16 @@ class OPCN2(OPC):
 
         return True if b1 == 0xF3 and b2 == 0x03 else False
 
-    def read_config_variables(self):
+    def config(self):
         """Read the configuration variables and returns them as a dictionary
 
         :returns: dictionary
         """
         config  = []
         data    = {}
-        command = 0x3C
 
         # Send the command byte and sleep for 10 ms
-        self.cnxn.xfer([command])
+        self.cnxn.xfer([0x3C])
         sleep(10e-3)
 
         # Read the config variables by sending 256 empty bytes
@@ -235,7 +247,7 @@ class OPCN2(OPC):
 
         # Add the bin bounds to the dictionary of data [bytes 0-29]
         for i in range(0, 15):
-            data["Bin Boundary {0}".format(i)] = self._combine_bytes(config[2*i], config[2*i + 1])
+            data["Bin Boundary {0}".format(i)] = self._16bit_unsigned(config[2*i], config[2*i + 1])
 
         # Add the Bin Particle Volumes (BPV) [bytes 32-95]
         for i in range(0, 16):
@@ -258,7 +270,7 @@ class OPCN2(OPC):
         data["FanDAC"]      = config[233]
 
         # If past firmware 15, add other things
-        if self.firmware > 15:
+        if self.firmware['major'] > 15.:
             data['TOF_SFR'] = config[234]
 
         # Don't know what to do about all of the bytes yet!
@@ -268,6 +280,35 @@ class OPCN2(OPC):
             for each in config:
                 print ("\t{0}: {1}".format(count, each))
                 count += 1
+
+        return data
+
+    @requires_firmware(18.)
+    def config2(self):
+        """Read the second set of configuration variables and return as a dictionary.
+
+        **NOTE: This method is supported by firmware v18+.**
+
+        :returns: dictionary
+        """
+        config  = []
+        data    = {}
+
+        # Send the command byte and sleep for 10 ms
+        self.cnxn.xfer([0x3D])
+        sleep(10e-3)
+
+        # Read the config variables by sending 256 empty bytes
+        for i in range(9):
+            resp = self.cnxn.xfer([0x00])[0]
+            config.append(resp)
+
+        data["AMSamplingInterval"]      = self._16bit_unsigned(config[0], config[1])
+        data["AMIdleIntervalCount"]     = self._16bit_unsigned(config[2], config[3])
+        data['AMFanOnIdle']             = config[4]
+        data['AMLaserOnIdle']           = config[5]
+        data['AMMaxDataArraysInFile']   = self._16bit_unsigned(config[6], config[7])
+        data['AMOnlySavePMData']        = config[8]
 
         return data
 
@@ -282,7 +323,20 @@ class OPCN2(OPC):
         """
         return
 
-    def read_histogram(self):
+    @requires_firmware(19.)
+    def write_config_variables2(self, config_vars):
+        """ Write configuration variables 2 to non-volatile memory.
+
+        **NOTE: This method is currently a placeholder and is not implemented.**
+        **NOTE: This method is supported by firmware v18+.**
+
+        :param config_vars: dictionary containing the configuration variables
+
+        :type config_vars: dictionary
+        """
+        return
+
+    def histogram(self):
         """Read and reset the histogram.
 
         :returns: dictionary
@@ -290,11 +344,8 @@ class OPCN2(OPC):
         resp = []
         data = {}
 
-        # command byte
-        command = 0x30
-
         # Send the command byte
-        self.cnxn.xfer([command])
+        self.cnxn.xfer([0x30])
 
         # Wait 10 ms
         sleep(10e-3)
@@ -305,33 +356,33 @@ class OPCN2(OPC):
             resp.append(r)
 
         # convert to real things and store in dictionary!
-        data['Bin 0']           = self._combine_bytes(resp[0], resp[1])
-        data['Bin 1']           = self._combine_bytes(resp[2], resp[3])
-        data['Bin 2']           = self._combine_bytes(resp[4], resp[5])
-        data['Bin 3']           = self._combine_bytes(resp[6], resp[7])
-        data['Bin 4']           = self._combine_bytes(resp[8], resp[9])
-        data['Bin 5']           = self._combine_bytes(resp[10], resp[11])
-        data['Bin 6']           = self._combine_bytes(resp[12], resp[13])
-        data['Bin 7']           = self._combine_bytes(resp[14], resp[15])
-        data['Bin 8']           = self._combine_bytes(resp[16], resp[17])
-        data['Bin 9']           = self._combine_bytes(resp[18], resp[19])
-        data['Bin 10']          = self._combine_bytes(resp[20], resp[21])
-        data['Bin 11']          = self._combine_bytes(resp[22], resp[23])
-        data['Bin 12']          = self._combine_bytes(resp[24], resp[25])
-        data['Bin 13']          = self._combine_bytes(resp[26], resp[27])
-        data['Bin 14']          = self._combine_bytes(resp[28], resp[29])
-        data['Bin 15']          = self._combine_bytes(resp[30], resp[31])
+        data['Bin 0']           = self._16bit_unsigned(resp[0], resp[1])
+        data['Bin 1']           = self._16bit_unsigned(resp[2], resp[3])
+        data['Bin 2']           = self._16bit_unsigned(resp[4], resp[5])
+        data['Bin 3']           = self._16bit_unsigned(resp[6], resp[7])
+        data['Bin 4']           = self._16bit_unsigned(resp[8], resp[9])
+        data['Bin 5']           = self._16bit_unsigned(resp[10], resp[11])
+        data['Bin 6']           = self._16bit_unsigned(resp[12], resp[13])
+        data['Bin 7']           = self._16bit_unsigned(resp[14], resp[15])
+        data['Bin 8']           = self._16bit_unsigned(resp[16], resp[17])
+        data['Bin 9']           = self._16bit_unsigned(resp[18], resp[19])
+        data['Bin 10']          = self._16bit_unsigned(resp[20], resp[21])
+        data['Bin 11']          = self._16bit_unsigned(resp[22], resp[23])
+        data['Bin 12']          = self._16bit_unsigned(resp[24], resp[25])
+        data['Bin 13']          = self._16bit_unsigned(resp[26], resp[27])
+        data['Bin 14']          = self._16bit_unsigned(resp[28], resp[29])
+        data['Bin 15']          = self._16bit_unsigned(resp[30], resp[31])
         data['Bin1 MToF']       = self._calculate_mtof(resp[32])
         data['Bin3 MToF']       = self._calculate_mtof(resp[33])
         data['Bin5 MToF']       = self._calculate_mtof(resp[34])
         data['Bin7 MToF']       = self._calculate_mtof(resp[35])
 
         # Bins associated with firmware versions 14 and 15(?)
-        if self.firmware < 16:
+        if self.firmware['version'] < 16.:
             data['Temperature']     = self._calculate_temp(resp[36:40])
             data['Pressure']        = self._calculate_pressure(resp[40:44])
             data['Sampling Period'] = self._calculate_period(resp[44:48])
-            data['Checksum']        = self._combine_bytes(resp[48], resp[49])
+            data['Checksum']        = self._16bit_unsigned(resp[48], resp[49])
             data['PM1']             = self._calculate_float(resp[50:54])
             data['PM2.5']           = self._calculate_float(resp[54:58])
             data['PM10']            = self._calculate_float(resp[58:])
@@ -354,7 +405,7 @@ class OPCN2(OPC):
                     data['Pressure']    = None
 
             data['Sampling Period'] = self._calculate_float(resp[44:48])
-            data['Checksum']        = self._combine_bytes(resp[48], resp[49])
+            data['Checksum']        = self._16bit_unsigned(resp[48], resp[49])
             data['PM1']             = self._calculate_float(resp[50:54])
             data['PM2.5']           = self._calculate_float(resp[54:58])
             data['PM10']            = self._calculate_float(resp[58:])
@@ -369,7 +420,7 @@ class OPCN2(OPC):
         # If debug is True, print out the bytes!
         if self.debug:
             count = 0
-            print ("Debugging the Histogram")
+            print ("Histogram Data")
             for each in resp:
                 print ("\t{0}: {1}".format(count, each))
                 count += 1
@@ -407,125 +458,225 @@ class OPCN2(OPC):
 
         return True if resp == success else False
 
-    def enter_bootloader_mode(self):
+    def _enter_bootloader_mode(self):
         """Enter bootloader mode. Must be issued prior to writing
         configuration variables to non-volatile memory.
 
         :returns: boolean success state
         """
-        command = 0x41
 
-        return True if self.cnxn.xfer(command)[0] == 0xF3 else False
+        return True if self.cnxn.xfer(0x41)[0] == 0xF3 else False
 
-    def set_fan_power(self, value):
+    def set_fan_power(self, power):
         """Set only the Fan power.
 
-        :param value: Fan power value as an integer between 0-255.
+        :param power: Fan power value as an integer between 0-255.
 
-        :type value: int
+        :type power: int
 
         :returns: boolean success state
         """
-        command = 0x42
-
         # Check to make sure the value is a single byte
-        if value >= 256:
-            raise ValueError("Try a single byte (0-255).")
+        if value > 255:
+            raise ValueError("The fan power should be a single byte (0-255).")
 
         # Send the command byte and wait 10 ms
-        a = self.cnxn.xfer([command])[0]
+        a = self.cnxn.xfer([0x42])[0]
         sleep(10e-3)
 
         # Send the next two bytes
         b = self.cnxn.xfer([0x00])[0]
-        c = self.cnxn.xfer([value])[0]
+        c = self.cnxn.xfer([power])[0]
 
         return True if a == 0xF3 and b == 0x42 and c == 0x00 else False
 
-    def set_laser_power(self, value):
+    def set_laser_power(self, power):
         """Set the laser power only.
 
-        :param value: Laser power as a value between 0-255.
+        :param power: Laser power as a value between 0-255.
 
-        :type value: int
+        :type power: int
 
         :returns: boolean success state
         """
-        command = 0x42
 
         # Check to make sure the value is a single byte
-        if value >= 256:
-            raise ValueError("Try a single byte (0-255).")
+        if value > 255:
+            raise ValueError("Laser Power should be a single byte (0-255).")
 
         # Send the command byte and wait 10 ms
-        a = self.cnxn.xfer([command])[0]
+        a = self.cnxn.xfer([0x42])[0]
         sleep(10e-3)
 
         # Send the next two bytes
         b = self.cnxn.xfer([0x01])[0]
-        c = self.cnxn.xfer([value])[0]
+        c = self.cnxn.xfer([power])[0]
 
         return True if a == 0xF3 and b == 0x42 and c == 0x01 else False
 
-    def laser_on(self):
-        """Turn the laser ON.
+    def toggle_laser(self, state):
+        """Toggle the power state of the laser.
 
-        :returns: boolean success state
+        :param state: Boolean state of the laser
+
+        :type state: boolean
+
+        :returns: boolean success status
         """
-        command = 0x03
-        byte    = 0x02
 
-        # Send the command byte, wait 10ms, and then send the byte
-        a = self.cnxn.xfer([command])[0]
+        # Send the command byte and wait 10 ms
+        a = self.cnxn.xfer([0x03])[0]
+
         sleep(10e-3)
-        b = self.cnxn.xfer([byte])[0]
+
+        # If state is true, turn the laser ON, else OFF
+        if state:
+            b = self.cnxn.xfer([0x02])[0]
+        else:
+            b = self.cnxn.xfer([0x03])[0]
 
         return True if a == 0xF3 and b == 0x03 else False
 
-    def laser_off(self):
-        """Turn the laser OFF
+    def toggle_fan(self, state):
+        """Toggle the power state of the fan.
 
-        :returns: boolean success state
+        :param state: Boolean state of the fan
+
+        :type state: boolean
+
+        :returns: boolean success status
         """
-        command = 0x03
-        byte    = 0x03
 
-        # Send the command byte, wait 10ms, and then send the byte
-        a = self.cnxn.xfer([command])[0]
+        # Send the command byte and wait 10 ms
+        a = self.cnxn.xfer([0x03])[0]
+
         sleep(10e-3)
-        b = self.cnxn.xfer([byte])[0]
+
+        # If state is true, turn the fan ON, else OFF
+        if state:
+            b = self.cnxn.xfer([0x04])[0]
+        else:
+            b = self.cnxn.xfer([0x05])[0]
 
         return True if a == 0xF3 and b == 0x03 else False
 
-    def fan_on(self):
-        """Turn the fan ON.
+    def read_pot_status(self):
+        """Read the status of the digital pot. Firmware v18+ only.
+        The return value is a dictionary containing the following as
+        unsigned 8-bit integers: FanON, LaserON, FanDACVal, LaserDACVal.
 
-        :returns: boolean success state
+        :returns: dict
         """
-        command = 0x03
-        byte    = 0x04
 
-        # Send the command byte, wait 10ms, and then send the byte
-        a = self.cnxn.xfer([command])[0]
+        # Check to make sure that v18+ is true
+        if self.firmware['version'] < 18.:
+            raise FirmwareVersionError("This method is not supported by your OPC-N2 firmware version.")
+
+        # Send the command byte and wait 10 ms
+        a = self.cnxn.xfer([0x13])[0]
+
         sleep(10e-3)
-        b = self.cnxn.xfer([byte])[0]
 
-        return True if a == 0xF3 and b == 0x03 else False
+        # Build an array of the results
+        res = []
+        for i in range(4):
+            res.append(self.cnxn.xfer([0x00])[0])
 
-    def fan_off(self):
-        """Turn the fan OFF.
+        return {
+            'FanON':        res[0],
+            'LaserON':      res[1],
+            'FanDACVal':    res[2],
+            'LaserDACVal':  res[3]
+            }
 
-        :returns: boolean success state
+    def sn(self):
+        """Read the Serial Number string. This method is only available on OPC-N2
+        firmware versions 18+.
+
+        :returns: string
         """
-        command = 0x03
-        byte    = 0x05
 
-        # Send the command byte, wait 10ms, and then send the byte
-        a = self.cnxn.xfer([command])[0]
+        if self.firmware['version'] < 18.:
+            raise FirmwareVersionError("This method is not supported by your firmware.")
+
+        string = []
+
+        # Send the command byte and sleep for 9 ms
+        self.cnxn.xfer([0x10])
+        sleep(9e-3)
+
+        # Read the info string by sending 60 empty bytes
+        for i in range(60):
+            resp = self.cnxn.xfer([0x00])[0]
+            string.append(chr(resp))
+
+        return ''.join(string)
+
+    def write_sn(self):
+        """Write the Serial Number string. This method is available for Firmware versions 18+.
+
+        **NOTE: This method is currently a placeholder and is not implemented.**
+
+        :param sn: string containing the serial number to write
+
+        :type sn: string
+        """
+
+        if self.firmware < 18.:
+            raise FirmwareVersionError("Your firmware does not support this method.")
+
+        return
+
+    def read_firmware(self):
+        """Read the firmware version of the OPC-N2. Firmware v18+ only.
+
+        :returns: dict
+        """
+        if self.firmware['version'] < 18.:
+            raise FirmwareVersionError("Your firmware does not support this method.")
+
+        # Send the command byte and sleep for 9 ms
+        self.cnxn.xfer([0x12])
         sleep(10e-3)
-        b = self.cnxn.xfer([byte])[0]
 
-        return True if a == 0xF3 and b == 0x03 else False
+        self.firmware['major'] = self.cnxn.xfer([0x00])[0]
+        self.firmware['minor'] = self.cnxn.xfer([0x00])[0]
+
+        # Build the firmware version
+        self.firmware['version'] = float('{}.{}'.format(self.firmware['major'], self.firmware['minor']))
+
+        return self.firmware
+
+    def pm(self):
+        """Read the PM data and reset the histogram
+
+        **NOTE: This method is supported by firmware v18+.**
+
+        :returns: dictionary
+        """
+        if self.firmware['major'] < 18:
+            raise FirmwareVersionError("This method is not supported by your firmware")
+
+        resp = []
+        data = {}
+
+        # Send the command byte
+        self.cnxn.xfer([0x32])
+
+        # Wait 10 ms
+        sleep(10e-3)
+
+        # read the histogram
+        for i in range(12):
+            r = self.cnxn.xfer([0x00])[0]
+            resp.append(r)
+
+        # convert to real things and store in dictionary!
+        data['PM1']     = self._calculate_float(resp[0:4])
+        data['PM2.5']   = self._calculate_float(resp[4:8])
+        data['PM10']    = self._calculate_float(resp[8:])
+
+        return data
 
 class OPCN1(OPC):
     """Create an instance of the Alphasene OPC-N1. opc.OPCN1 inherits from
@@ -603,7 +754,7 @@ class OPCN1(OPC):
 
         # Add the bin bounds to the dictionary of data [bytes 0-29]
         for i in range(0, 14):
-            data["Bin Boundary {0}".format(i)] = self._combine_bytes(config[2*i], config[2*i + 1])
+            data["Bin Boundary {0}".format(i)] = self._16bit_unsigned(config[2*i], config[2*i + 1])
 
         return data
 
@@ -669,22 +820,22 @@ class OPCN1(OPC):
             resp.append(r)
 
         # convert to real things and store in dictionary!
-        data['Bin 0']           = self._combine_bytes(resp[0], resp[1])
-        data['Bin 1']           = self._combine_bytes(resp[2], resp[3])
-        data['Bin 2']           = self._combine_bytes(resp[4], resp[5])
-        data['Bin 3']           = self._combine_bytes(resp[6], resp[7])
-        data['Bin 4']           = self._combine_bytes(resp[8], resp[9])
-        data['Bin 5']           = self._combine_bytes(resp[10], resp[11])
-        data['Bin 6']           = self._combine_bytes(resp[12], resp[13])
-        data['Bin 7']           = self._combine_bytes(resp[14], resp[15])
-        data['Bin 8']           = self._combine_bytes(resp[16], resp[17])
-        data['Bin 9']           = self._combine_bytes(resp[18], resp[19])
-        data['Bin 10']          = self._combine_bytes(resp[20], resp[21])
-        data['Bin 11']          = self._combine_bytes(resp[22], resp[23])
-        data['Bin 12']          = self._combine_bytes(resp[24], resp[25])
-        data['Bin 13']          = self._combine_bytes(resp[26], resp[27])
-        data['Bin 14']          = self._combine_bytes(resp[28], resp[29])
-        data['Bin 15']          = self._combine_bytes(resp[30], resp[31])
+        data['Bin 0']           = self._16bit_unsigned(resp[0], resp[1])
+        data['Bin 1']           = self._16bit_unsigned(resp[2], resp[3])
+        data['Bin 2']           = self._16bit_unsigned(resp[4], resp[5])
+        data['Bin 3']           = self._16bit_unsigned(resp[6], resp[7])
+        data['Bin 4']           = self._16bit_unsigned(resp[8], resp[9])
+        data['Bin 5']           = self._16bit_unsigned(resp[10], resp[11])
+        data['Bin 6']           = self._16bit_unsigned(resp[12], resp[13])
+        data['Bin 7']           = self._16bit_unsigned(resp[14], resp[15])
+        data['Bin 8']           = self._16bit_unsigned(resp[16], resp[17])
+        data['Bin 9']           = self._16bit_unsigned(resp[18], resp[19])
+        data['Bin 10']          = self._16bit_unsigned(resp[20], resp[21])
+        data['Bin 11']          = self._16bit_unsigned(resp[22], resp[23])
+        data['Bin 12']          = self._16bit_unsigned(resp[24], resp[25])
+        data['Bin 13']          = self._16bit_unsigned(resp[26], resp[27])
+        data['Bin 14']          = self._16bit_unsigned(resp[28], resp[29])
+        data['Bin 15']          = self._16bit_unsigned(resp[30], resp[31])
         data['Bin1 MToF']       = self._calculate_mtof(resp[32])
         data['Bin3 MToF']       = self._calculate_mtof(resp[33])
         data['Bin5 MToF']       = self._calculate_mtof(resp[34])
@@ -692,7 +843,7 @@ class OPCN1(OPC):
         data['Temperature']     = self._calculate_temp(resp[36:40])
         data['Pressure']        = self._calculate_pressure(resp[40:44])
         data['Sampling Period'] = self._calculate_period(resp[44:48])
-        data['Checksum']        = self._combine_bytes(resp[48], resp[49])
+        data['Checksum']        = self._16bit_unsigned(resp[48], resp[49])
         data['PM1']             = self._calculate_float(resp[50:54])
         data['PM2.5']           = self._calculate_float(resp[54:58])
         data['PM10']            = self._calculate_float(resp[58:])

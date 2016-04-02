@@ -5,7 +5,7 @@
     Written originally by David H Hagan
 '''
 
-__version__ = '0.3.1'
+__version__ = '1.0.1'
 
 try:
     from setuptools import setup
@@ -16,7 +16,7 @@ setup(
     name = 'py-opc',
     version = __version__,
     packages = ['opc'],
-    description = 'Python libary for operating the Alphasense OPC-N2',
+    description = 'Python libary for operating the Alphasense OPC-N2 optical particle counter',
     author = 'David H Hagan',
     author_email = 'david@davidhhagan.com',
     license = 'MIT',

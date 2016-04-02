@@ -294,9 +294,6 @@ class OPCN2(OPC):
         config  = []
         data    = {}
 
-        #if self.firmware['version'] < 18:
-        #    raise FirmwareVersionError("Your firmware does not support this method.")
-
         # Send the command byte and sleep for 10 ms
         self.cnxn.xfer([0x3D])
         sleep(10e-3)
@@ -326,6 +323,7 @@ class OPCN2(OPC):
         """
         return
 
+    @requires_firmware(19.)
     def write_config_variables2(self, config_vars):
         """ Write configuration variables 2 to non-volatile memory.
 

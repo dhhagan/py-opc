@@ -22,6 +22,10 @@ You can install this package using ``pip``::
 
       pip install py-opc
 
+You can upgrade by issuing the command::
+
+      pip install py-opc --upgrade
+
 Requirements
 ------------
 
@@ -72,6 +76,24 @@ Still running into problems?
 .. _issue: https://github.com/dhhagan/py-opc/issues/new
 .. _feature: https://github.com/dhhagan/py-opc/issues/new
 
+Current Supported Firmware
+--------------------------
+
+There are several versions of Alphasense OPC-N2 firmware's that are currently deployed. If
+you have a version that is not listed in the table or is not tested, please send a pull request
+with your test results! The following versions have been tested:
+
+====================================  ===========  ========== ============ ==========
+ Alphasense OPC-N2 Firmware Version   Python2.7    Python3.5  Date Tested  Tested By
+====================================  ===========  ========== ============ ==========
+v14
+v15
+v16
+v17
+v18.2                                 Yes           Yes       2016-04-02   D. Hagan
+====================================  ===========  ========== ============ ==========
+
+
 Examples
 ========
 
@@ -108,9 +130,7 @@ Reading a Histogram
       alpha.on()
 
       # Read the histogram and print to console
-      hist = alpha.read_histogram()
-
-      for key, value in hist.items():
+      for key, value in alpha.histogram().items():
           print ("Key: {}\tValue: {}".format(key, value))
 
       # Shut down the opc
@@ -121,17 +141,18 @@ API Reference
 
 .. module:: opc
 .. autoclass:: OPC
-   :members: _combine_bytes, _calculate_float, read_info_string, ping, _calculate_mtof,
-            _calculate_temp, _calculate_pressure, _calculate_bin_boundary
+   :members: _16bit_unsigned, _calculate_float, read_info_string, ping, _calculate_mtof,
+            _calculate_temp, _calculate_pressure, _calculate_bin_boundary, _calculate_period, ping
 .. autoclass:: OPCN1
    :members: on, off, read_gsc_sfr, read_bin_boundaries, write_gsc_sfr, read_bin_particle_density,
             write_bin_particle_density, read_histogram
 .. autoclass:: OPCN2
-   :members: on, off, read_config_variables, write_config_variables, read_histogram, save_config_variables,
-                enter_bootloader_mode, set_fan_power, set_laser_power, laser_on, laser_off, fan_on, fan_off
+   :members: on, off, config, config2, write_config_variables, write_config_variables2, histogram, save_config_variables,
+                _enter_bootloader_mode, set_fan_power, set_laser_power, toggle_laser, toggle_fan, read_pot_status, sn, write_sn,
+                read_firmware, pm
 
 Exceptions
 ----------
 
-.. autoexception:: opc.FirmwareError
-.. autoexception:: opc.SPIError
+.. autoexception:: opc.exceptions.FirmwareVersionError
+.. autoexception:: opc.exceptions.SpiConnectionError

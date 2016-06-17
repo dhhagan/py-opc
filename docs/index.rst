@@ -83,15 +83,15 @@ There are several versions of Alphasense OPC-N2 firmware's that are currently de
 you have a version that is not listed in the table or is not tested, please send a pull request
 with your test results! The following versions have been tested:
 
-====================================  ===========  ========== ============ ==========
- Alphasense OPC-N2 Firmware Version   Python2.7    Python3.5  Date Tested  Tested By
-====================================  ===========  ========== ============ ==========
+=========================  ===========  ========== ============ ==========
+ OPC-N2 Firmware Version   Python2.7    Python3.5  Date Tested  Tested By
+=========================  ===========  ========== ============ ==========
 v14
 v15
 v16
 v17
-v18.2                                 Yes           Yes       2016-04-02   D. Hagan
-====================================  ===========  ========== ============ ==========
+v18.2                      Yes           Yes       2016-04-02   D. Hagan
+=========================  ===========  ========== ============ ==========
 
 
 Examples
@@ -105,7 +105,7 @@ Setting up the SPI Connection
       import opc
 
       # Open a SPI connection on CE0
-      spi = spidev.Spidev()
+      spi = spidev.SpiDev()
       spi.open(0, 0)
 
       # Set the SPI mode and clock speed

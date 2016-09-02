@@ -1,6 +1,7 @@
 from pkg_resources import get_distribution
 from .exceptions import FirmwareVersionError, SpiConnectionError
 from .decorators import requires_firmware
+from .lookup_table import OPC_LOOKUP
 
 from time import sleep
 import spidev
@@ -152,21 +153,34 @@ class OPC(object):
         else:
             return self._calculate_float(vals)
 
-    def _calculate_bin_boundary(self, val):
-        """Calculates the bin boundary value in micrometers, assuming a 12-bit ADC with 17.5 um Full-Scale.
+    def _lookup_bin_boundary(self, adc_value):
+        """Looks up the bin boundary value in microns based on the lookup table provided by Alphasense.
 
-            **NOTE**: This is incorrect!
+            :param adc_value: ADC Value (0 - 4095)
 
-            :param val: ADC Value
-
-            :type val: int
+            :type adc_value: int
 
             :rtype: float
         """
-        fullscale   = 17.5    # micrometers
-        adc         = 12
+        if adc_value < 0:
+            adc_value = 0
 
-        return (val / (2**adc - 1)) * fullscale
+        if adc_value > 4095:
+            adc_value = 4095
+
+        return OPC_LOOKUP[adc_value]
+
+    def _calculate_bin_boundary(self, bb):
+        """Calculate the adc value that corresponds to a specific bin boundary diameter in microns.
+
+            :param bb: Bin Boundary in microns
+
+            :type bb: float
+
+            :rtype: int
+        """
+
+        return min(enumerate(OPC_LOOKUP), key = lambda x: abs(x[1] - bb))[0]
 
     def read_info_string(self):
         """Reads the information string for the OPC
@@ -381,6 +395,9 @@ class OPCN2(OPC):
 
         :type config_vars: dictionary
         """
+
+        warnings.warn("This method has not yet been implemented.")
+
         return
 
     @requires_firmware(18.)
@@ -394,6 +411,9 @@ class OPCN2(OPC):
 
         :type config_vars: dictionary
         """
+
+        warnings.warn("This method has not yet been implemented.")
+
         return
 
     def histogram(self):

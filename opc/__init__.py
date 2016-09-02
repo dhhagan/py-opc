@@ -153,7 +153,7 @@ class OPC(object):
         else:
             return self._calculate_float(vals)
 
-    def _lookup_bin_boundary(self, adc_value):
+    def lookup_bin_boundary(self, adc_value):
         """Looks up the bin boundary value in microns based on the lookup table provided by Alphasense.
 
             :param adc_value: ADC Value (0 - 4095)
@@ -170,7 +170,7 @@ class OPC(object):
 
         return OPC_LOOKUP[adc_value]
 
-    def _calculate_bin_boundary(self, bb):
+    def calculate_bin_boundary(self, bb):
         """Calculate the adc value that corresponds to a specific bin boundary diameter in microns.
 
             :param bb: Bin Boundary in microns

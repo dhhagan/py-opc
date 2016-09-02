@@ -1,6 +1,7 @@
 from pkg_resources import get_distribution
 from .exceptions import FirmwareVersionError, SpiConnectionError
 from .decorators import requires_firmware
+from .lookup_table import OPC_LOOKUP
 
 from time import sleep
 import spidev
@@ -48,8 +49,8 @@ class OPC(object):
         self.model      = kwargs.get('model', 'N2')
 
         # Check to make sure the connection is a valid SpiDev instance
-        if not isinstance(spi_connection, spidev.SpiDev):
-            raise SpiConnectionError("This is not an instance of SpiDev.")
+        assert isinstance(spi_connection, spidev.SpiDev), "The SPI connection must be a valid spidev.SpiDev instance"
+        assert self.cnxn.mode == 1, "SPI mode must be 1"
 
         # Set the firmware version upon initialization
         try:
@@ -152,21 +153,34 @@ class OPC(object):
         else:
             return self._calculate_float(vals)
 
-    def _calculate_bin_boundary(self, val):
-        """Calculates the bin boundary value in micrometers, assuming a 12-bit ADC with 17.5 um Full-Scale.
+    def lookup_bin_boundary(self, adc_value):
+        """Looks up the bin boundary value in microns based on the lookup table provided by Alphasense.
 
-            **NOTE**: This is incorrect!
+            :param adc_value: ADC Value (0 - 4095)
 
-            :param val: ADC Value
-
-            :type val: int
+            :type adc_value: int
 
             :rtype: float
         """
-        fullscale   = 17.5    # micrometers
-        adc         = 12
+        if adc_value < 0:
+            adc_value = 0
 
-        return (val / (2**adc - 1)) * fullscale
+        if adc_value > 4095:
+            adc_value = 4095
+
+        return OPC_LOOKUP[adc_value]
+
+    def calculate_bin_boundary(self, bb):
+        """Calculate the adc value that corresponds to a specific bin boundary diameter in microns.
+
+            :param bb: Bin Boundary in microns
+
+            :type bb: float
+
+            :rtype: int
+        """
+
+        return min(enumerate(OPC_LOOKUP), key = lambda x: abs(x[1] - bb))[0]
 
     def read_info_string(self):
         """Reads the information string for the OPC
@@ -321,14 +335,6 @@ class OPCN2(OPC):
         if self.firmware['major'] > 15.:
             data['TOF_SFR'] = config[234]
 
-        # Don't know what to do about all of the bytes yet!
-        if self.debug:
-            count = 0
-            print ("Debugging the Config Variables")
-            for each in config:
-                print ("\t{0}: {1}".format(count, each))
-                count += 1
-
         return data
 
     @requires_firmware(18.)
@@ -381,6 +387,9 @@ class OPCN2(OPC):
 
         :type config_vars: dictionary
         """
+
+        warnings.warn("This method has not yet been implemented.")
+
         return
 
     @requires_firmware(18.)
@@ -394,6 +403,9 @@ class OPCN2(OPC):
 
         :type config_vars: dictionary
         """
+
+        warnings.warn("This method has not yet been implemented.")
+
         return
 
     def histogram(self):
@@ -499,14 +511,6 @@ class OPCN2(OPC):
                 data['Bin 7'] + data['Bin 8'] + data['Bin 9'] + data['Bin 10']  + \
                 data['Bin 11'] + data['Bin 12'] + data['Bin 13'] + data['Bin 14'] + \
                 data['Bin 15']
-
-        # If debug is True, print out the bytes!
-        if self.debug:
-            count = 0
-            print ("Histogram Data")
-            for each in resp:
-                print ("\t{0}: {1}".format(count, each))
-                count += 1
 
         # Check that checksum and the least significant bits of the sum of histogram bins
         # are equivilant
@@ -988,19 +992,5 @@ class OPCN1(OPC):
                 data['Bin 7'] + data['Bin 8'] + data['Bin 9'] + data['Bin 10']  + \
                 data['Bin 11'] + data['Bin 12'] + data['Bin 13'] + data['Bin 14'] + \
                 data['Bin 15']
-
-        # If debug is True, print out the bytes!
-        if self.debug:
-            count = 0
-            print ("Debugging the Histogram")
-            for each in resp:
-                print ("\t{0}: {1}".format(count, each))
-                count += 1
-
-        # Check that checksum and the least significant bits of the sum of histogram bins
-        # are equivilant (Doesn't work right now for some reason -> checksum always == 0!)
-        #if (histogram_sum & 0x0000FFFF) != data['Checksum']:
-        #    warnings.warn("Data transfer was incomplete.")
-        #    return None
 
         return data

@@ -46,8 +46,7 @@ class SetupTestCase(unittest.TestCase):
         self.spi.mode = 1
         self.spi.max_speed_hz = 500000
 
-        self.alpha = OPCN2(self.spi, debug = True)
-        #self.assertRaises(SPIError, OPCN2, None)
+        self.alpha = OPCN2(self.spi)
 
     def tearDown(self):
         pass

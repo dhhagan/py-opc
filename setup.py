@@ -5,7 +5,7 @@
     Written originally by David H Hagan
 '''
 
-__version__ = '1.1.0'
+__version__ = '1.2.0'
 
 try:
     from setuptools import setup
@@ -36,6 +36,5 @@ setup(
 		'Topic :: Scientific/Engineering :: Atmospheric Science',
 		'Topic :: Software Development',
         'Topic :: System :: Hardware',
-        'Topic :: Software Development :: Libraries :: Python Modules'
     ]
 )

@@ -49,9 +49,10 @@ class OPC(object):
         self.model      = kwargs.get('model', 'N2')
 
         # Check to make sure the connection is a valid SpiDev instance
-        assert isinstance(spi_connection, spidev.SpiDev), "The SPI connection must be a valid spidev.SpiDev instance"
+        msg = ("The SPI connection must be a valid SPI master with "
+               "transfer function 'xfer'")
+        assert hasattr(spi_connection, 'xfer'), msg
         assert self.cnxn.mode == 1, "SPI mode must be 1"
-
         # Set the firmware version upon initialization
         try:
             self.firmware['version']    = int(re.findall("\d{3}", self.read_info_string())[-1])

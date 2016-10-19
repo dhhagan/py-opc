@@ -409,8 +409,13 @@ class OPCN2(OPC):
 
         return
 
-    def histogram(self):
-        """Read and reset the histogram.
+    def histogram(self, number_concentration = True):
+        """Read and reset the histogram. As of v1.3.0, histogram
+        values are reported in particle number concentration (#/cc) by default.
+
+        :param number_concentration: If true, histogram bins are reported in number concentration vs. raw values.
+
+        :type number_concentration: boolean
 
         :rtype: dictionary
 
@@ -518,6 +523,27 @@ class OPCN2(OPC):
         if (histogram_sum & 0x0000FFFF) != data['Checksum']:
             warnings.warn("Data transfer was incomplete.")
             return None
+
+        # If histogram is true, convert histogram values to number concentration
+        if number_concentration is True:
+            _conv_ = data['SFR'] * data['Sampling Period'] # Divider in units of ml (cc)
+
+            data['Bin 0']   = data['Bin 0'] / _conv_
+            data['Bin 1']   = data['Bin 1'] / _conv_
+            data['Bin 2']   = data['Bin 2'] / _conv_
+            data['Bin 3']   = data['Bin 3'] / _conv_
+            data['Bin 4']   = data['Bin 4'] / _conv_
+            data['Bin 5']   = data['Bin 5'] / _conv_
+            data['Bin 6']   = data['Bin 6'] / _conv_
+            data['Bin 7']   = data['Bin 7'] / _conv_
+            data['Bin 8']   = data['Bin 8'] / _conv_
+            data['Bin 9']   = data['Bin 9'] / _conv_
+            data['Bin 10']  = data['Bin 10'] / _conv_
+            data['Bin 11']  = data['Bin 11'] / _conv_
+            data['Bin 12']  = data['Bin 12'] / _conv_
+            data['Bin 13']  = data['Bin 13'] / _conv_
+            data['Bin 14']  = data['Bin 14'] / _conv_
+            data['Bin 15']  = data['Bin 15'] / _conv_
 
         return data
 

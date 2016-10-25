@@ -7,9 +7,9 @@ Welcome to py-opc's documentation!
 ==================================
 
 **py-opc** is a python module that enables one to use easily operate the Alphasense
-OPC-N2 optical particle counter through a Raspberry Pi over the SPI bus. It was originally
-designed using a Rapsberry Pi 2 Model B and Python3.5; however, it should work on other versions
-as well.
+OPC-N2 optical particle counter through a Raspberry Pi over the SPI bus using either a SPI-USB converter
+or directly over the GPIO pins. It was originally designed using a Rapsberry Pi 2 Model B
+and Python3.5; however, it should work on other versions as well.
 
 There are a variety of OPC Models and firmware versions from Alphasense; a table documenting which ones
 are supported will be added. If you own an OPC-N2 with a firmware version that has not been tested, please
@@ -18,7 +18,7 @@ do so and submit as an issue on the GitHub repository.
 Installation
 ------------
 
-You can install this package using ``pip``::
+You can install this package directly from pypi using ``pip``::
 
       pip install py-opc
 
@@ -26,17 +26,34 @@ You can upgrade by issuing the command::
 
       pip install py-opc --upgrade
 
+If interested in testing a development version, clone (or download) the repository and then install as follows::
+
+      python setup.py develop
+
+
 Requirements
 ------------
 
-The following packages are required:
+One of the following packages is required:
 
   * py-spidev_
+  * pyusbiss_
 
 .. _py-spidev: https://github.com/doceme/py-spidev
+.. _pyusbiss: https://github.com/DancingQuanta/pyusbiss
+
+Use the spidev library if you are planning to connect to OPC to the microcontroller via the GPIO pins.  Use
+the pyusbiss library if connecting via a SPI-USB adapter.
+
 
 Setting Up the Raspberry Pi
 ---------------------------
+
+There are now two simple ways to connect your Alphasense OPC to a Raspberry Pi (or similar device): directly via the GPIO
+pins, or using a SPI-USB converter.
+
+Connecting via GPIO
+~~~~~~~~~~~~~~~~~~~
 
 If you are not familiar with setting up a Raspberry Pi to be used as a SPI device,
 here are a couple of great tutorials: RPi_, Drogon_, and Hensley_. A few important things
@@ -63,6 +80,14 @@ are stated below:
 .. _RPi: https://www.raspberrypi.org/documentation/hardware/raspberrypi/spi/
 .. _Drogon: https://projects.drogon.net/understanding-spi-on-the-raspberry-pi/
 .. _Hensley: http://www.brianhensley.net/2012/07/getting-spi-working-on-raspberry-pi.html
+
+Connecting via a USB-SPI Converter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To connect your OPC to the Raspberry Pi directly, you can use a SPI-USB converter. They can be found
+fairly inexpensively online or directly from Alphasense.
+
+You will then be able to directly connect the OPC to your Raspberry Pi's USB port.
 
 Getting Help
 ------------
@@ -99,6 +124,10 @@ Examples
 
 Setting up the SPI Connection
 -----------------------------
+
+Using the SpiDev Library via GPIO Pins
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ::
 
       import spidev
@@ -111,6 +140,17 @@ Setting up the SPI Connection
       # Set the SPI mode and clock speed
       spi.mode = 1
       spi.max_speed_hz = 500000
+
+Using the pyusbiss Library via USB Port
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+      import usbiss
+      import opc
+
+      # Open a SPI connection
+      spi = usbiss.USBISS("/dev/ttyACM0", 'spi', spi_mode = 2, freq = 500000)
 
 
 Initiating the OPCN2
@@ -142,7 +182,7 @@ API Reference
 .. module:: opc
 .. autoclass:: OPC
    :members: _16bit_unsigned, _calculate_float, read_info_string, ping, _calculate_mtof,
-            _calculate_temp, _calculate_pressure, _calculate_bin_boundary, _calculate_period, ping
+            _calculate_temp, _calculate_pressure, lookup_bin_boundary _calculate_bin_boundary, _calculate_period, ping
 .. autoclass:: OPCN1
    :members: on, off, read_gsc_sfr, read_bin_boundaries, write_gsc_sfr, read_bin_particle_density,
             write_bin_particle_density, read_histogram

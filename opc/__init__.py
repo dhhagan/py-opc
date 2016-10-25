@@ -4,12 +4,12 @@ from .decorators import requires_firmware
 from .lookup_table import OPC_LOOKUP
 
 from time import sleep
-import spidev
 import struct
 import warnings
 import re
 
 from .exceptions import firmware_error_msg
+
 
 __all__ = ['OPCN2', 'OPCN1']
 __version__ = get_distribution('py-opc').version
@@ -18,13 +18,13 @@ class OPC(object):
     """Generic class for any Alphasense OPC. Provides the common methods and calculations
     for each OPC.
 
-    :param spi_connection: spidev.SpiDev connection
+    :param spi_connection: spidev.SpiDev or usbiss.USBISS connection
     :param debug: Set true to print data to console while running
     :param model: Model number of the OPC ('N1' or 'N2') set by the parent class
 
     :raises: opc.exceptions.SpiConnectionError
 
-    :type spi_connection: spidev.SpiDev
+    :type spi_connection: spidev.SpiDev or usbiss.USBISS
     :type debug: boolean
     :type model: string
 
@@ -48,7 +48,7 @@ class OPC(object):
         self.firmware   = {'major': None, 'minor': None, 'version': None}
         self.model      = kwargs.get('model', 'N2')
 
-        # Check to make sure the connection is a valid SpiDev instance
+        # Check to make sure the connection has the xfer attribute
         msg = ("The SPI connection must be a valid SPI master with "
                "transfer function 'xfer'")
         assert hasattr(spi_connection, 'xfer'), msg
@@ -409,8 +409,13 @@ class OPCN2(OPC):
 
         return
 
-    def histogram(self):
-        """Read and reset the histogram.
+    def histogram(self, number_concentration = True):
+        """Read and reset the histogram. As of v1.3.0, histogram
+        values are reported in particle number concentration (#/cc) by default.
+
+        :param number_concentration: If true, histogram bins are reported in number concentration vs. raw values.
+
+        :type number_concentration: boolean
 
         :rtype: dictionary
 
@@ -518,6 +523,27 @@ class OPCN2(OPC):
         if (histogram_sum & 0x0000FFFF) != data['Checksum']:
             warnings.warn("Data transfer was incomplete.")
             return None
+
+        # If histogram is true, convert histogram values to number concentration
+        if number_concentration is True:
+            _conv_ = data['SFR'] * data['Sampling Period'] # Divider in units of ml (cc)
+
+            data['Bin 0']   = data['Bin 0'] / _conv_
+            data['Bin 1']   = data['Bin 1'] / _conv_
+            data['Bin 2']   = data['Bin 2'] / _conv_
+            data['Bin 3']   = data['Bin 3'] / _conv_
+            data['Bin 4']   = data['Bin 4'] / _conv_
+            data['Bin 5']   = data['Bin 5'] / _conv_
+            data['Bin 6']   = data['Bin 6'] / _conv_
+            data['Bin 7']   = data['Bin 7'] / _conv_
+            data['Bin 8']   = data['Bin 8'] / _conv_
+            data['Bin 9']   = data['Bin 9'] / _conv_
+            data['Bin 10']  = data['Bin 10'] / _conv_
+            data['Bin 11']  = data['Bin 11'] / _conv_
+            data['Bin 12']  = data['Bin 12'] / _conv_
+            data['Bin 13']  = data['Bin 13'] / _conv_
+            data['Bin 14']  = data['Bin 14'] / _conv_
+            data['Bin 15']  = data['Bin 15'] / _conv_
 
         return data
 

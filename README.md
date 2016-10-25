@@ -1,9 +1,7 @@
 [![Build Status](https://travis-ci.org/dhhagan/py-opc.svg?branch=develop)](https://travis-ci.org/dhhagan/py-opc)
 [![PyPI version](https://badge.fury.io/py/py-opc.svg)](https://badge.fury.io/py/py-opc)
 [![Coverage Status](https://coveralls.io/repos/dhhagan/py-opc/badge.svg?branch=master&service=github)](https://coveralls.io/github/dhhagan/py-opc?branch=master)
-[![Join the chat at https://gitter.im/dhhagan/py-opc](https://badges.gitter.im/dhhagan/py-opc.svg)](https://gitter.im/dhhagan/py-opc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.48803.svg)](http://dx.doi.org/10.5281/zenodo.48803)
-
+[![DOI](https://zenodo.org/badge/30832320.svg)](https://zenodo.org/badge/latestdoi/30832320)
 
 # py-opc
 

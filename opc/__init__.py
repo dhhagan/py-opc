@@ -4,12 +4,12 @@ from .decorators import requires_firmware
 from .lookup_table import OPC_LOOKUP
 
 from time import sleep
-import spidev
 import struct
 import warnings
 import re
 
 from .exceptions import firmware_error_msg
+
 
 __all__ = ['OPCN2', 'OPCN1']
 __version__ = get_distribution('py-opc').version
@@ -18,13 +18,13 @@ class OPC(object):
     """Generic class for any Alphasense OPC. Provides the common methods and calculations
     for each OPC.
 
-    :param spi_connection: spidev.SpiDev connection
+    :param spi_connection: spidev.SpiDev or usbiss.USBISS connection
     :param debug: Set true to print data to console while running
     :param model: Model number of the OPC ('N1' or 'N2') set by the parent class
 
     :raises: opc.exceptions.SpiConnectionError
 
-    :type spi_connection: spidev.SpiDev
+    :type spi_connection: spidev.SpiDev or usbiss.USBISS
     :type debug: boolean
     :type model: string
 
@@ -48,7 +48,7 @@ class OPC(object):
         self.firmware   = {'major': None, 'minor': None, 'version': None}
         self.model      = kwargs.get('model', 'N2')
 
-        # Check to make sure the connection is a valid SpiDev instance
+        # Check to make sure the connection has the xfer attribute
         msg = ("The SPI connection must be a valid SPI master with "
                "transfer function 'xfer'")
         assert hasattr(spi_connection, 'xfer'), msg

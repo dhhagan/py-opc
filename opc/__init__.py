@@ -606,7 +606,7 @@ class OPCN2(OPC):
         True
         """
         # Check to make sure the value is a single byte
-        if value > 255:
+        if power > 255:
             raise ValueError("The fan power should be a single byte (0-255).")
 
         # Send the command byte and wait 10 ms

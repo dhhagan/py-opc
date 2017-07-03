@@ -5,7 +5,7 @@
     Written originally by David H Hagan
 '''
 
-__version__ = '1.3.0'
+__version__ = '1.4.0'
 
 try:
     from setuptools import setup
@@ -33,6 +33,7 @@ setup(
 		'Programming Language :: Python :: 3.3',
 		'Programming Language :: Python :: 3.4',
 		'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
 		'Topic :: Scientific/Engineering :: Atmospheric Science',
 		'Topic :: Software Development',
         'Topic :: System :: Hardware',

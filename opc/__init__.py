@@ -21,6 +21,7 @@ class OPC(object):
     :param spi_connection: spidev.SpiDev or usbiss.USBISS connection
     :param debug: Set true to print data to console while running
     :param model: Model number of the OPC ('N1' or 'N2') set by the parent class
+    :param firmware: You can manually set the firmware version as a tuple. Ex. (18,2)
 
     :raises: opc.exceptions.SpiConnectionError
 
@@ -41,32 +42,45 @@ class OPC(object):
      >>> spi.max_speed_hz = 500000
      >>>
      >>> alpha = opc.OPC(spi)
+
+     >>> # You can also set the firmware version manually
+     >>> alpha = opc.OPC(spi, firmware=(18,2))
+
     """
-    def __init__(self, spi_connection, **kwargs):
+    def __init__(self, spi_connection, firmware=None, **kwargs):
         self.cnxn       = spi_connection
         self.debug      = kwargs.get('debug', False)
-        self.firmware   = {'major': None, 'minor': None, 'version': None}
         self.model      = kwargs.get('model', 'N2')
+
+        if firmware is not None:
+            major, minor = firmware[0], firmware[1]
+            version = "{}.{}".format(major, minor)
+        else:
+            major, minor, version = None, None, None
+
+        self.firmware   = {'major': major, 'minor': minor, 'version': version}
 
         # Check to make sure the connection has the xfer attribute
         msg = ("The SPI connection must be a valid SPI master with "
                "transfer function 'xfer'")
         assert hasattr(spi_connection, 'xfer'), msg
         assert self.cnxn.mode == 1, "SPI mode must be 1"
-        # Set the firmware version upon initialization
-        try:
-            self.firmware['version']    = int(re.findall("\d{3}", self.read_info_string())[-1])
-        except:
-            # Try again for the early (v7) firmwares
+
+        # Set the firmware version upon initialization IFF it hasn't been set manually
+        if self.firmware['version'] is None:
             try:
-                self.firmware['version'] = int(re.findall("\d{1}", self.read_info_string())[-1])
+                self.firmware['version']    = int(re.findall("\d{3}", self.read_info_string())[-1])
             except:
-                msg =   """
-                        Your firmware version could not be automatically detected. This is usually caused
-                        by a bad wiring or poor power supply. If niether of these are likely candidates, please
-                        open an issue on the GitHub repository at https://github.com/dhhagan/py-opc/issues/new
-                        """
-                raise FirmwareVersionError(msg)
+                # Try again for the early (v7) firmwares
+                try:
+                    self.firmware['version'] = int(re.findall("\d{1}", self.read_info_string())[-1])
+                except:
+                    msg =   """
+                            Your firmware version could not be automatically detected. This is usually caused
+                            by a bad wiring or poor power supply. If niether of these are likely candidates, please
+                            open an issue on the GitHub repository at https://github.com/dhhagan/py-opc/issues/new
+                            """
+                    raise FirmwareVersionError(msg)
 
         # If firmware version is >= 18, set the major and minor versions..
         try:
@@ -76,6 +90,9 @@ class OPC(object):
                 self.firmware['major'] = self.firmware['version']
         except:
             pass
+
+        # Sleep for a bit to alleviate issues
+        sleep(10)
 
     def _16bit_unsigned(self, LSB, MSB):
         """Returns the combined LSB and MSB
@@ -237,7 +254,7 @@ class OPCN2(OPC):
     Alphasense OPC-N2v18.2
     """
     def __init__(self, spi_connection, **kwargs):
-        super(OPCN2, self).__init__(spi_connection, model = 'N2', **kwargs)
+        super(OPCN2, self).__init__(spi_connection, model='N2', **kwargs)
 
         firmware_min = 14.   # Minimum firmware version supported
         firmware_max = 18.   # Maximum firmware version supported
@@ -409,7 +426,7 @@ class OPCN2(OPC):
 
         return
 
-    def histogram(self, number_concentration = True):
+    def histogram(self, number_concentration=True):
         """Read and reset the histogram. As of v1.3.0, histogram
         values are reported in particle number concentration (#/cc) by default.
 
@@ -856,7 +873,7 @@ class OPCN1(OPC):
     :raises: FirmwareVersionError
     """
     def __init(self, spi_connection, **kwargs):
-        super(OPCN1, self).__init__(spi_connection, model = 'N1', **kwargs)
+        super(OPCN1, self).__init__(spi_connection, model='N1', **kwargs)
 
     def on(self):
         """Turn ON the OPC (fan and laser)

@@ -54,7 +54,7 @@ class OPC(object):
 
         if firmware is not None:
             major, minor = firmware[0], firmware[1]
-            version = "{}.{}".format(major, minor)
+            version = float("{}.{}".format(major, minor))
         else:
             major, minor, version = None, None, None
 

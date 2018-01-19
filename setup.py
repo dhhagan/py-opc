@@ -5,7 +5,7 @@
     Written originally by David H Hagan
 '''
 
-VERSION = '1.4.0'
+VERSION = '1.4.1'
 
 try:
     from setuptools import setup

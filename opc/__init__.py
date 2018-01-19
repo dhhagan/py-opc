@@ -9,13 +9,12 @@ import re
 
 from .exceptions import firmware_error_msg
 
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 
 __all__ = ['OPCN2', 'OPCN1']
 
-class OPC(object):
-    """Generic class for any Alphasense OPC. Provides the common methods and calculations
-    for each OPC.
+class _OPC(object):
+    """Generic class for any Alphasense OPC. Provides the common methods and calculations for each OPC. This class is designed to be the base class, and should not be used alone unless during development.
 
     :param spi_connection: spidev.SpiDev or usbiss.USBISS connection
     :param debug: Set true to print data to console while running
@@ -28,22 +27,7 @@ class OPC(object):
     :type debug: boolean
     :type model: string
 
-    :rtype: opc.OPC
-
-    :Example:
-
-     >>> import opc
-     >>> import spidev
-     >>>
-     >>> spi = spidev.SpiDev()
-     >>> spi.open(0, 0)
-     >>> spi.mode = 1
-     >>> spi.max_speed_hz = 500000
-     >>>
-     >>> alpha = opc.OPC(spi)
-
-     >>> # You can also set the firmware version manually
-     >>> alpha = opc.OPC(spi, firmware=(18,2))
+    :rtype: opc._OPC
 
     """
     def __init__(self, spi_connection, firmware=None, **kwargs):
@@ -232,7 +216,7 @@ class OPC(object):
     def __repr__(self):
         return "Alphasense OPC-{}v{}".format(self.model, self.firmware['version'])
 
-class OPCN2(OPC):
+class OPCN2(_OPC):
     """Create an instance of the Alphasene OPC-N2. Currently supported by firmware
     versions 14-18. opc.OPCN2 inherits from the opc.OPC parent class.
 
@@ -857,7 +841,7 @@ class OPCN2(OPC):
 
         return data
 
-class OPCN1(OPC):
+class OPCN1(_OPC):
     """Create an instance of the Alphasene OPC-N1. opc.OPCN1 inherits from
     the opc.OPC parent class.
 

@@ -174,9 +174,9 @@ API Reference
 =============
 
 .. module:: opc
-.. autoclass:: OPC
+.. autoclass:: _OPC
    :members: _16bit_unsigned, _calculate_float, read_info_string, ping, _calculate_mtof,
-            _calculate_temp, _calculate_pressure, lookup_bin_boundary _calculate_bin_boundary, _calculate_period, ping
+            _calculate_temp, _calculate_pressure, lookup_bin_boundary, calculate_bin_boundary, _calculate_period, ping
 .. autoclass:: OPCN1
    :members: on, off, read_gsc_sfr, read_bin_boundaries, write_gsc_sfr, read_bin_particle_density,
             write_bin_particle_density, read_histogram

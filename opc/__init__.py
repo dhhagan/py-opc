@@ -1,4 +1,3 @@
-from pkg_resources import get_distribution
 from .exceptions import FirmwareVersionError, SpiConnectionError
 from .decorators import requires_firmware
 from .lookup_table import OPC_LOOKUP
@@ -10,13 +9,12 @@ import re
 
 from .exceptions import firmware_error_msg
 
+__version__ = "1.4.1"
 
 __all__ = ['OPCN2', 'OPCN1']
-__version__ = get_distribution('py-opc').version
 
-class OPC(object):
-    """Generic class for any Alphasense OPC. Provides the common methods and calculations
-    for each OPC.
+class _OPC(object):
+    """Generic class for any Alphasense OPC. Provides the common methods and calculations for each OPC. This class is designed to be the base class, and should not be used alone unless during development.
 
     :param spi_connection: spidev.SpiDev or usbiss.USBISS connection
     :param debug: Set true to print data to console while running
@@ -29,22 +27,7 @@ class OPC(object):
     :type debug: boolean
     :type model: string
 
-    :rtype: opc.OPC
-
-    :Example:
-
-     >>> import opc
-     >>> import spidev
-     >>>
-     >>> spi = spidev.SpiDev()
-     >>> spi.open(0, 0)
-     >>> spi.mode = 1
-     >>> spi.max_speed_hz = 500000
-     >>>
-     >>> alpha = opc.OPC(spi)
-
-     >>> # You can also set the firmware version manually
-     >>> alpha = opc.OPC(spi, firmware=(18,2))
+    :rtype: opc._OPC
 
     """
     def __init__(self, spi_connection, firmware=None, **kwargs):
@@ -76,9 +59,7 @@ class OPC(object):
                     self.firmware['version'] = int(re.findall("\d{1}", self.read_info_string())[-1])
                 except:
                     msg =   """
-                            Your firmware version could not be automatically detected. This is usually caused
-                            by a bad wiring or poor power supply. If niether of these are likely candidates, please
-                            open an issue on the GitHub repository at https://github.com/dhhagan/py-opc/issues/new
+                            Your firmware version could not be automatically detected. This is usually caused by bad wiring or a poor power supply. If niether of these are likely candidates, please open an issue on the GitHub repository at https://github.com/dhhagan/py-opc/issues/new
                             """
                     raise FirmwareVersionError(msg)
 
@@ -235,7 +216,7 @@ class OPC(object):
     def __repr__(self):
         return "Alphasense OPC-{}v{}".format(self.model, self.firmware['version'])
 
-class OPCN2(OPC):
+class OPCN2(_OPC):
     """Create an instance of the Alphasene OPC-N2. Currently supported by firmware
     versions 14-18. opc.OPCN2 inherits from the opc.OPC parent class.
 
@@ -860,7 +841,7 @@ class OPCN2(OPC):
 
         return data
 
-class OPCN1(OPC):
+class OPCN1(_OPC):
     """Create an instance of the Alphasene OPC-N1. opc.OPCN1 inherits from
     the opc.OPC parent class.
 

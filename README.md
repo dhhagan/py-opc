@@ -7,24 +7,20 @@
 
 Python library for operating the Alphasense OPC-N2 Optical Particle Counter using a Raspberry Pi (or other linux device). Full documentation can be found [here](http://py-opc.readthedocs.org/en/latest/).
 
+
 ## Dependencies
 
+One of:
+
   1. [`py-spidev`](https://github.com/doceme/py-spidev)
+  1. [`py-usbiss`](https://github.com/dancingquanta/py-usbiss)
+
 
 ## Installation
 
-For use on the Raspberry Pi (or any other linux device?), there are two methods for easy installation:
+For use on the Raspberry Pi (or any other linux device?), install via pip:
 
-### pip (preferred)
-
-Install the py-opc package through PyPi:
-
-    >>> pip install py-opc
-
-Upgrade to the newest version:
-
-    >>> pip install py-opc --upgrade
-
+    >>> pip install py-opc [--upgrade]
 
 ## License
 
@@ -33,6 +29,10 @@ Upgrade to the newest version:
 ## Documentation
 
   Full documentation can be found [here](http://py-opc.readthedocs.org/en/latest/).
+
+  You can also build the documentation by navigating to the `docs` directory and issuing the command:
+
+    >>> make html
 
 
 ## Sample Script / Getting Started

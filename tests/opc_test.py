@@ -2,7 +2,7 @@ import unittest
 import mock
 from time import sleep
 from opc import OPCN2
-from opc.exceptions import SPIError, FirmwareError
+from opc.exceptions import SpiConnectionError, FirmwareVersionError
 import spidev
 
 interval = 1

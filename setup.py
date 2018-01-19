@@ -5,7 +5,7 @@
     Written originally by David H Hagan
 '''
 
-__version__ = '1.4.0'
+VERSION = '1.4.0'
 
 try:
     from setuptools import setup
@@ -14,7 +14,7 @@ except:
 
 setup(
     name = 'py-opc',
-    version = __version__,
+    version = VERSION,
     packages = ['opc'],
     description = 'Python libary for operating the Alphasense OPC-N2 optical particle counter',
     author = 'David H Hagan',

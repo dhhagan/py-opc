@@ -6,30 +6,24 @@
 Welcome to py-opc's documentation!
 ==================================
 
-**py-opc** is a python module that enables one to use easily operate the Alphasense
-OPC-N2 optical particle counter through a Raspberry Pi over the SPI bus using either a SPI-USB converter
-or directly over the GPIO pins. It was originally designed using a Rapsberry Pi 2 Model B
-and Python3.5; however, it should work on other versions as well.
+**py-opc** is a python module that makes it easy to operate the Alphasense OPC-N2 optical particle counter using a Raspberry Pi over the SPI bus using either a SPI-USB converter or directly using the GPIO pins. It was originally designed using a Rapsberry Pi 2 Model B
+and Python3.5; however, it should work on all variants.
 
-There are a variety of OPC Models and firmware versions from Alphasense; a table documenting which ones
-are supported will be added. If you own an OPC-N2 with a firmware version that has not been tested, please
-do so and submit as an issue on the GitHub repository.
+There are a variety of OPC Models and firmware versions from Alphasense; a table documenting which ones are supported can be found in the complete documentation. If you own an OPC-N2 with a firmware version that has not been tested, please do so and submit as an issue on the GitHub repository.
 
 Installation
 ------------
 
-You can install this package directly from pypi using ``pip``::
+There are several ways to install py-opc. The recommended method is through the python package manager, ``pip``::
 
-      pip install py-opc
+      >>> pip install py-opc [--upgrade]
 
-You can upgrade by issuing the command::
 
-      pip install py-opc --upgrade
+If interested in testing a development version, clone (or download) the repository, navigate to the folder where the files are located, and install as follows::
 
-If interested in testing a development version, clone (or download) the repository and then install as follows::
+      >>> python setup.py develop
 
-      python setup.py develop
-
+If interested in developing, please visit the "how to contribute" page.
 
 Requirements
 ------------

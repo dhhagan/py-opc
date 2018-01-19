@@ -1,4 +1,3 @@
-from pkg_resources import get_distribution
 from .exceptions import FirmwareVersionError, SpiConnectionError
 from .decorators import requires_firmware
 from .lookup_table import OPC_LOOKUP
@@ -10,9 +9,9 @@ import re
 
 from .exceptions import firmware_error_msg
 
+__version__ = "1.4.0"
 
 __all__ = ['OPCN2', 'OPCN1']
-__version__ = get_distribution('py-opc').version
 
 class OPC(object):
     """Generic class for any Alphasense OPC. Provides the common methods and calculations
@@ -76,9 +75,7 @@ class OPC(object):
                     self.firmware['version'] = int(re.findall("\d{1}", self.read_info_string())[-1])
                 except:
                     msg =   """
-                            Your firmware version could not be automatically detected. This is usually caused
-                            by a bad wiring or poor power supply. If niether of these are likely candidates, please
-                            open an issue on the GitHub repository at https://github.com/dhhagan/py-opc/issues/new
+                            Your firmware version could not be automatically detected. This is usually caused by bad wiring or a poor power supply. If niether of these are likely candidates, please open an issue on the GitHub repository at https://github.com/dhhagan/py-opc/issues/new
                             """
                     raise FirmwareVersionError(msg)
 

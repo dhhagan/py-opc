@@ -28,11 +28,15 @@ bibliography: paper.bib
 
 # Statement of Need
 
-As shipped, the Alphasense OPC-N2 ships with a PC-ready GUI, but no acceptable drivers for using with popular microcontrollers. This library fixes that.
+As shipped by Alphasense Ltd., the OPC-N2 optical particle counter is operable either via a PC-based GUI or running the device in standalone mode (logging to an on-board SD card). However, most people use the device in a remote fashion by building it into a more complete air quality monitoring device. While SPI control is possible, there is no library available to do so, thus requiring individuals to roll out their own software solution each time.
 
 # Summary
 
-The py-opc and opcn2 libraries enable the simple operation of the Alphasense OPC-N2 optical particle counter (OPC) from either a Raspberry Pi/Beagle Bone (written in python) or Arduino/Arduino-like devices (written in c++). The python version requires either the py-spidev (GPIO pins) or pyusbiss (USB-SPI converter) libraries. Complete SPI control is given to the user via the API, allowing complete control over settings and operation of the OPC.
+py-opc is a python library for operating the Alphasense OPC-N2 via a raspberry pi or arduino/arduino-like microcontroller. The OPC-N2 is one of the more popular OEM particle counters used by researchers and other interested parties, as it provides reasonably accurate data (see references) across a wide range of particle diameters (PM1, PM2.5, PM10) at high time resolution (~1Hz). In addition to particle mass loadings, the device also provides access to the underlying histogram/bin counts, allowing researchers to further probe the source of aerosols.
+
+As mentioned in the statement of need above, the manufacturer does not provide their own software that can be used to control the device, with the exception of a PC-based GUI (with drivers for Windows machines only). py-opc provides a python library with a simple API for operating the device via the SPI interface, which means it is completely cross-platform. The value-add is large, as it reduces the time to get started using this device with distributed sensors. The python library is built on top of the py-spidev library (GPIO pins) and/or pyusbiss library (USB) to operate with a Raspberry Pi or Beaglebone. Full control is given to the user via the API including functionality to set configuration settings, read configuration settings, sample the histogram, and much more (see full API documentation for complete list of functionality).
+
+Overall, the goal of this work is to make it easier for other scientists to get started with this device without the need for writing their own SPI wrapper.
 
 # Mentions
 

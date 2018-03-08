@@ -31,7 +31,7 @@ Requirements
 One of the following packages is required:
 
   * py-spidev_
-  * pyusbiss_
+  * pyusbiss_ (0.2.0 or greater)
 
 .. _py-spidev: https://github.com/doceme/py-spidev
 .. _pyusbiss: https://github.com/DancingQuanta/pyusbiss
@@ -140,12 +140,15 @@ Using the pyusbiss Library via USB Port
 
 ::
 
-      import usbiss
+      from usbiss.spi import SPI
       import opc
 
       # Open a SPI connection
-      spi = usbiss.USBISS("/dev/ttyACM0", 'spi', spi_mode = 2, freq = 500000)
+      spi = SPI("/dev/ttyACM0")
 
+      # Set the SPI mode and clock speed
+      spi.mode = 1
+      spi.max_speed_hz = 500000
 
 Initiating the OPCN2
 --------------------

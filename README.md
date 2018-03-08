@@ -81,11 +81,15 @@ Use this approach if you have connected your RPi to the OPC-N2 via a SPI-USB ada
 
 **NOTE**: Currently, this method is only supported on python3+ due to limitations in the `pyusbiss` library.
 
-    import usbiss
+    from usbiss.spi import SPI
     import opc
 
     # Build the connector
-    spi = usbiss.USBISS("/dev/ttyACM0", "spi", spi_mode=2, freq=500000)
+    spi = SPI("/dev/ttyACM0")
+
+    # Set the SPI mode and clock speed
+    spi.mode = 1
+    spi.max_speed_hz = 500000
 
     alpha = opc.OPCN2(spi)
 

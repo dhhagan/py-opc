@@ -16,14 +16,14 @@ __all__ = ['OPCN2', 'OPCN1']
 class _OPC(object):
     """Generic class for any Alphasense OPC. Provides the common methods and calculations for each OPC. This class is designed to be the base class, and should not be used alone unless during development.
 
-    :param spi_connection: spidev.SpiDev or usbiss.USBISS connection
+    :param spi_connection: spidev.SpiDev or usbiss.spi.SPI connection
     :param debug: Set true to print data to console while running
     :param model: Model number of the OPC ('N1' or 'N2') set by the parent class
     :param firmware: You can manually set the firmware version as a tuple. Ex. (18,2)
 
     :raises: opc.exceptions.SpiConnectionError
 
-    :type spi_connection: spidev.SpiDev or usbiss.USBISS
+    :type spi_connection: spidev.SpiDev or usbiss.spi.SPI
     :type debug: boolean
     :type model: string
 

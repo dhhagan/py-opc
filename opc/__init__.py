@@ -6,8 +6,13 @@ from time import sleep
 import struct
 import warnings
 import re
+import logging
 
 from .exceptions import firmware_error_msg
+
+# set up a default logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 __version__ = "1.6.0"
 
@@ -70,8 +75,11 @@ class _OPC(object):
 
                 try:
                     self.firmware['version'] = int(re.findall("\d{3}", infostring)[-1])
-                except:
-                    sleep(retry_interval_ms)
+                except Exception as e:
+                    logger.error(e, exc_info=True)
+
+                    # sleep for a period of time
+                    sleep(retry_interval_ms / 1000)
 
                 i = i + 1
 
@@ -84,10 +92,10 @@ class _OPC(object):
             else:
                 self.firmware['major'] = self.firmware['version']
         except:
-            pass
+            logger.info("No firmware version could be read.")
 
         # Sleep for a bit to alleviate issues
-        sleep(10)
+        sleep(1)
 
     def _16bit_unsigned(self, LSB, MSB):
         """Returns the combined LSB and MSB
@@ -255,6 +263,8 @@ class OPCN2(_OPC):
         firmware_max = 18.   # Maximum firmware version supported
 
         if self.firmware['major'] < firmware_min or self.firmware['major'] > firmware_max:
+            logger.error("Firmware version is invalid for this device.")
+
             raise FirmwareVersionError("Your firmware is not yet supported. Only versions 14-18 are currently supported.")
 
     def on(self):
@@ -400,8 +410,7 @@ class OPCN2(_OPC):
 
         :type config_vars: dictionary
         """
-
-        warnings.warn("This method has not yet been implemented.")
+        logger.warning("This method has not yet been implemented yet.")
 
         return
 
@@ -417,7 +426,7 @@ class OPCN2(_OPC):
         :type config_vars: dictionary
         """
 
-        warnings.warn("This method has not yet been implemented.")
+        logger.warning("This method has not yet been implemented.")
 
         return
 

@@ -542,7 +542,7 @@ class OPCN2(_OPC):
         # Check that checksum and the least significant bits of the sum of histogram bins
         # are equivilant
         if (histogram_sum & 0x0000FFFF) != data['Checksum']:
-            warnings.warn("Data transfer was incomplete.")
+            logger.warning("Data transfer was incomplete")
             return None
 
         # If histogram is true, convert histogram values to number concentration

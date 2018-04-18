@@ -14,14 +14,23 @@ spi.max_speed_hz = 500000
 
 alpha = opc.OPCN2(spi, debug=True)
 
+print ("Running manual OPC-N2 tests...")
+
+sleep(1)
+
 # turn on
-print ("Turning ON")
-print (alpha.on())
+print ("Turning ON: {}".format(alpha.on()))
+
+sleep(1)
 
 print ("Reading histogram")
 print (alpha.histogram())
+sleep(1)
 
-sleep(5)
+print (alpha.histogram())
+sleep(1)
 
-print ("Turning off")
-print (alpha.off())
+print (alpha.histogram())
+sleep(1)
+
+print ("Turning off: {}".format(alpha.off()))

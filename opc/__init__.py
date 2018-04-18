@@ -76,7 +76,7 @@ class _OPC(object):
                 try:
                     self.firmware['version'] = int(re.findall("\d{3}", infostring)[-1])
                 except Exception as e:
-                    logger.error(e, exc_info=True)
+                    logger.error("Could not parse the fimrware version from {}".format(infostring), exc_info=True)
 
                     # sleep for a period of time
                     sleep(retry_interval_ms / 1000)

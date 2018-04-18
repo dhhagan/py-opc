@@ -9,7 +9,7 @@ import re
 
 from .exceptions import firmware_error_msg
 
-__version__ = "1.4.1"
+__version__ = "1.6.0"
 
 __all__ = ['OPCN2', 'OPCN1']
 
@@ -20,17 +20,21 @@ class _OPC(object):
     :param debug: Set true to print data to console while running
     :param model: Model number of the OPC ('N1' or 'N2') set by the parent class
     :param firmware: You can manually set the firmware version as a tuple. Ex. (18,2)
+    :param max_cnxn_retries: Maximum number of times a connection will try to be made.
+    :param retry_interval_ms: The sleep interval for the device between retrying to connect to the OPC. Units are in ms.
 
     :raises: opc.exceptions.SpiConnectionError
 
     :type spi_connection: spidev.SpiDev or usbiss.spi.SPI
     :type debug: boolean
     :type model: string
+    :type max_cnxn_retries: int
+    :type retry_interval_ms: int
 
     :rtype: opc._OPC
 
     """
-    def __init__(self, spi_connection, firmware=None, **kwargs):
+    def __init__(self, spi_connection, firmware=None, max_cnxn_retries=5, retry_interval_ms=1000, **kwargs):
         self.cnxn       = spi_connection
         self.debug      = kwargs.get('debug', False)
         self.model      = kwargs.get('model', 'N2')
@@ -50,18 +54,28 @@ class _OPC(object):
         assert self.cnxn.mode == 1, "SPI mode must be 1"
 
         # Set the firmware version upon initialization IFF it hasn't been set manually
+        i = 0
         if self.firmware['version'] is None:
-            try:
-                self.firmware['version']    = int(re.findall("\d{3}", self.read_info_string())[-1])
-            except:
-                # Try again for the early (v7) firmwares
-                try:
-                    self.firmware['version'] = int(re.findall("\d{1}", self.read_info_string())[-1])
-                except:
+            while self.firmware['version'] is None:
+                if i > max_cnxn_retries:
                     msg =   """
-                            Your firmware version could not be automatically detected. This is usually caused by bad wiring or a poor power supply. If niether of these are likely candidates, please open an issue on the GitHub repository at https://github.com/dhhagan/py-opc/issues/new
+                            Your firmware version could not be automatically detected. This is usually caused by bad wiring or a poor power supply. If niether of these are likely candidates, please open an issue on the GitHub repository at https://github.com/dhhagan/py-opc/issues/new. Another option would be to
+                            increase the max_cnxn_retries variable if you feel the serial communication is being held up for some reason.
                             """
+
                     raise FirmwareVersionError(msg)
+
+                # store the info_string
+                infostring = self.read_info_string()
+
+                try:
+                    self.firmware['version'] = int(re.findall("\d{3}", infostring)[-1])
+                except:
+                    sleep(retry_interval_ms)
+
+                i = i + 1
+
+        # At this point, we have a firmware version
 
         # If firmware version is >= 18, set the major and minor versions..
         try:

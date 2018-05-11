@@ -656,7 +656,7 @@ class OPCN2(_OPC):
         """
 
         # Check to make sure the value is a single byte
-        if value > 255:
+        if power > 255:
             raise ValueError("Laser Power should be a single byte (0-255).")
 
         # Send the command byte and wait 10 ms

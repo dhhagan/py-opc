@@ -15,6 +15,7 @@ authors:
  - name: Andrew Tolmie
    affiliation: "2, 3"
  - name: Jakub Trochim
+   affiliation: "4"
 affiliations:
  - name: Massachusetts Institute of Technology
    index: 1
@@ -22,6 +23,8 @@ affiliations:
    index: 2
  - name: National Physical Laboratory
    index: 3
+ - name: Sensonar
+   index: 4
 date: 2017-12-21
 bibliography: paper.bib
 ---

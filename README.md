@@ -1,3 +1,4 @@
+[![status](http://joss.theoj.org/papers/049f6d3dab9391e8353484028148dd0d/status.svg)](http://joss.theoj.org/papers/049f6d3dab9391e8353484028148dd0d)
 [![Build Status](https://travis-ci.org/dhhagan/py-opc.svg?branch=develop)](https://travis-ci.org/dhhagan/py-opc)
 [![PyPI version](https://badge.fury.io/py/py-opc.svg)](https://badge.fury.io/py/py-opc)
 [![Coverage Status](https://coveralls.io/repos/dhhagan/py-opc/badge.svg?branch=master&service=github)](https://coveralls.io/github/dhhagan/py-opc?branch=master)

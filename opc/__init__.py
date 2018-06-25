@@ -14,7 +14,7 @@ from .exceptions import firmware_error_msg
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-__version__ = "1.6.0"
+__version__ = "1.6.1"
 
 __all__ = ['OPCN2', 'OPCN1']
 
@@ -81,7 +81,7 @@ class _OPC(object):
                     # sleep for a period of time
                     sleep(retry_interval_ms / 1000)
 
-                i = i + 1
+                i += 1
 
         # At this point, we have a firmware version
 
@@ -224,6 +224,8 @@ class _OPC(object):
             resp = self.cnxn.xfer([0x00])[0]
             infostring.append(chr(resp))
 
+        sleep(0.1)
+
         return ''.join(infostring)
 
     def ping(self):
@@ -232,6 +234,8 @@ class _OPC(object):
         :rtype: Boolean
         """
         b = self.cnxn.xfer([0xCF])[0]           # send the command byte
+
+        sleep(0.1)
 
         return True if b == 0xF3 else False
 
@@ -280,6 +284,7 @@ class OPCN2(_OPC):
         b1 = self.cnxn.xfer([0x03])[0]          # send the command byte
         sleep(9e-3)                             # sleep for 9 ms
         b2, b3 = self.cnxn.xfer([0x00, 0x01])   # send the following byte
+        sleep(0.1)
 
         return True if b1 == 0xF3 and b2 == 0x03 else False
 
@@ -296,6 +301,7 @@ class OPCN2(_OPC):
         b1 = self.cnxn.xfer([0x03])[0]          # send the command byte
         sleep(9e-3)                             # sleep for 9 ms
         b2 = self.cnxn.xfer([0x01])[0]          # send the following two bytes
+        sleep(0.1)
 
         return True if b1 == 0xF3 and b2 == 0x03 else False
 
@@ -358,6 +364,8 @@ class OPCN2(_OPC):
         if self.firmware['major'] > 15.:
             data['TOF_SFR'] = config[234]
 
+        sleep(0.1)
+
         return data
 
     @requires_firmware(18.)
@@ -398,6 +406,8 @@ class OPCN2(_OPC):
         data['AMLaserOnIdle']           = config[5]
         data['AMMaxDataArraysInFile']   = self._16bit_unsigned(config[6], config[7])
         data['AMOnlySavePMData']        = config[8]
+
+        sleep(0.1)
 
         return data
 
@@ -566,6 +576,8 @@ class OPCN2(_OPC):
             data['Bin 14']  = data['Bin 14'] / _conv_
             data['Bin 15']  = data['Bin 15'] / _conv_
 
+        sleep(0.1)
+
         return data
 
     def save_config_variables(self):
@@ -595,6 +607,8 @@ class OPCN2(_OPC):
         for each in byte_list:
             r = self.cnxn.xfer([each])[0]
             resp.append(r)
+
+        sleep(0.1)
 
         return True if resp == success else False
 
@@ -638,6 +652,8 @@ class OPCN2(_OPC):
         b = self.cnxn.xfer([0x00])[0]
         c = self.cnxn.xfer([power])[0]
 
+        sleep(0.1)
+
         return True if a == 0xF3 and b == 0x42 and c == 0x00 else False
 
     def set_laser_power(self, power):
@@ -667,6 +683,8 @@ class OPCN2(_OPC):
         b = self.cnxn.xfer([0x01])[0]
         c = self.cnxn.xfer([power])[0]
 
+        sleep(0.1)
+
         return True if a == 0xF3 and b == 0x42 and c == 0x01 else False
 
     def toggle_laser(self, state):
@@ -695,6 +713,8 @@ class OPCN2(_OPC):
         else:
             b = self.cnxn.xfer([0x03])[0]
 
+        sleep(0.1)
+
         return True if a == 0xF3 and b == 0x03 else False
 
     def toggle_fan(self, state):
@@ -722,6 +742,8 @@ class OPCN2(_OPC):
             b = self.cnxn.xfer([0x04])[0]
         else:
             b = self.cnxn.xfer([0x05])[0]
+
+        sleep(0.1)
 
         return True if a == 0xF3 and b == 0x03 else False
 
@@ -753,6 +775,8 @@ class OPCN2(_OPC):
         for i in range(4):
             res.append(self.cnxn.xfer([0x00])[0])
 
+        sleep(0.1)
+
         return {
             'FanON':        res[0],
             'LaserON':      res[1],
@@ -782,6 +806,8 @@ class OPCN2(_OPC):
         for i in range(60):
             resp = self.cnxn.xfer([0x00])[0]
             string.append(chr(resp))
+
+        sleep(0.1)
 
         return ''.join(string)
 
@@ -823,6 +849,8 @@ class OPCN2(_OPC):
         # Build the firmware version
         self.firmware['version'] = float('{}.{}'.format(self.firmware['major'], self.firmware['minor']))
 
+        sleep(0.1)
+
         return self.firmware
 
     @requires_firmware(18.)
@@ -861,6 +889,8 @@ class OPCN2(_OPC):
         data['PM1']     = self._calculate_float(resp[0:4])
         data['PM2.5']   = self._calculate_float(resp[4:8])
         data['PM10']    = self._calculate_float(resp[8:])
+
+        sleep(0.1)
 
         return data
 

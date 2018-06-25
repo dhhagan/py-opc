@@ -16,6 +16,16 @@ One of the following, depending on whether you use GPIO pins or a SPI-USB adapte
   1. [`py-spidev`](https://github.com/doceme/py-spidev) - for those using GPIO pins
   1. [`pyusbiss`](https://github.com/dancingquanta/pyusbiss) - for those using a SPI-USB adapter (python3+ only)
 
+### Additional Dependencies for Local Development
+
+If you wish to build the local documentation or run unittests, there are a few additional dependencies that are required including:
+
+  * sphinx
+  * sphinx_rtd_theme
+  * mock
+
+The complete list can be found in `requirements-dev.txt`.
+
 
 ## Installation
 

@@ -94,8 +94,12 @@ class _OPC(object):
         except:
             logger.info("No firmware version could be read.")
 
-        # Sleep for a bit to alleviate issues
-        sleep(1)
+        # We requested to wait until the device is connected
+        if kwargs.get('wait', False) is not False:
+            self.wait(**kwargs)
+
+        else: # Sleep for a bit to alleviate issues
+            sleep(1)
 
     def _16bit_unsigned(self, LSB, MSB):
         """Returns the combined LSB and MSB
@@ -173,6 +177,31 @@ class _OPC(object):
             return ((vals[3] << 24) | (vals[2] << 16) | (vals[1] << 8) | vals[0]) / 12e6
         else:
             return self._calculate_float(vals)
+
+    def wait(self, **kwargs):
+        """Wait for the OPC to prepare itself for data transmission. On some devides this can take a few seconds
+        :rtype: self
+        :Example:
+        >> alpha = opc.OPCN2(spi, debug=True).wait(check=200)
+        >> alpha = opc.OPCN2(spi, debug=True, wait=True, check=200)
+        """
+
+        if not callable(self.on):
+            raise UserWarning('Your device does not support the self.on function, try without wait')
+
+        if not callable(self.histogram):
+            raise UserWarning('Your device does not support the self.histogram function, try without wait')
+
+        self.on()
+        while True:
+            try:
+                if self.histogram() is None:
+                    raise UserWarning('Could not load histogram, perhaps the device is not yet connected')
+
+            except UserWarning as e:
+                sleep(kwargs.get('check', 200) / 1000.)
+
+        return self
 
     def lookup_bin_boundary(self, adc_value):
         """Looks up the bin boundary value in microns based on the lookup table provided by Alphasense.

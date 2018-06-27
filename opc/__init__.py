@@ -14,7 +14,7 @@ from .exceptions import firmware_error_msg
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-__version__ = "1.6.1"
+__version__ = "1.6.0"
 
 __all__ = ['OPCN2', 'OPCN1']
 

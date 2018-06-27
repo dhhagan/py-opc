@@ -77,6 +77,8 @@ Use if you are using the GPIO pins in conjunction with `py-spidev`
     # Turn the opc ON
     alphasense.on()
 
+    sleep(1)
+
     # Read the information string
     print (alphasense.read_info_string())
 
@@ -94,6 +96,7 @@ Use this approach if you have connected your RPi to the OPC-N2 via a SPI-USB ada
 
     from usbiss.spi import SPI
     import opc
+    from time import sleep
 
     # Build the connector
     spi = SPI("/dev/ttyACM0")
@@ -106,6 +109,11 @@ Use this approach if you have connected your RPi to the OPC-N2 via a SPI-USB ada
 
     # Turn on the device
     alpha.on()
+
+    sleep(1)
+
+    # read the information string
+    print (repr(alpha.read_info_string()))
 
     # Read the histogram
     alpha.histogram()

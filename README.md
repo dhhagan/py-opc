@@ -33,9 +33,13 @@ For use on the Raspberry Pi (or any other linux device?), install via pip:
 
     $ pip install py-opc [--upgrade]
 
-As `pyusbiss` is not yet available through a package manager, you must download from source (if you are using the SPI-USB adapter only). This can be done as follows:
+If you are using the SPI-USB adapter only, you will also need to install `pyusbiss`. This can be done as follows:
 
-    $ pip install git+https://github.com/DancingQuanta/pyusbiss.git
+    $ pip install pyusbiss
+
+Depending on your python setup, you may need to use `pip3` instead of `pip` to install for python3+:
+
+    $ pip3 install pyusbiss
 
 If you are using the GPIO pins to communicate with the OPC-N2, you must download the requirement `py-spidev` as follows:
 
